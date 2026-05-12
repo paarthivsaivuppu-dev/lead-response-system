@@ -10,6 +10,7 @@ type LeadSmsNotificationInput = {
   phone: string | null;
   source: string;
   extraction: LeadExtraction | null;
+  smsAlertsEnabled?: boolean;
 };
 
 function formatValue(value: string | null | undefined) {
@@ -37,6 +38,11 @@ export async function sendLeadSmsNotification(input: LeadSmsNotificationInput) {
 
   if (!config.businessSmsAlertsEnabled) {
     console.log("Business SMS skipped: BUSINESS_SMS_ALERTS_ENABLED is not true");
+    return;
+  }
+
+  if (input.smsAlertsEnabled !== true) {
+    console.log("Business SMS skipped: business sms alerts disabled");
     return;
   }
 

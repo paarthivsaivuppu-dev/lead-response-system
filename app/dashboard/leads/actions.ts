@@ -110,7 +110,8 @@ export async function createLead(formData: FormData) {
     customerEmail,
     source: source as "manual" | "email" | "sms" | "website",
     originalMessage,
-    emailNotificationsEnabled: settings.email_notifications_enabled
+    emailNotificationsEnabled: settings.email_notifications_enabled,
+    smsAlertsEnabled: settings.sms_alerts_enabled
   });
 
   revalidatePath("/dashboard");

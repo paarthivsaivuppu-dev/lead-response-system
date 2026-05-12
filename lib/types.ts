@@ -23,6 +23,7 @@ export type Business = {
 
 export type BusinessSettings = {
   email_notifications_enabled: boolean;
+  sms_alerts_enabled: boolean;
 };
 
 export type Lead = {

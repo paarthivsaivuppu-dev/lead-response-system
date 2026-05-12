@@ -201,16 +201,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true, skipped: true });
     }
 
-    const { data: emailNotificationRule } = await supabase
+    const { data: notificationRules } = await supabase
       .from("business_rules")
-      .select("rule_value")
+      .select("rule_type, rule_value")
       .eq("business_id", business.id)
-      .eq("rule_type", "email_notifications_enabled")
-      .maybeSingle();
-    const ruleValue = emailNotificationRule?.rule_value as
-      | { enabled?: boolean }
-      | null
-      | undefined;
+      .in("rule_type", ["email_notifications_enabled", "sms_alerts_enabled"]);
+    const rules = new Map(
+      (notificationRules ?? []).map((rule) => [
+        rule.rule_type,
+        rule.rule_value as { enabled?: boolean } | null | undefined
+      ])
+    );
 
     const sender = parseEmailAddress(email.from ?? event.data?.from);
     const subject = email.subject ?? event.data?.subject ?? "No subject";
@@ -228,8 +229,10 @@ export async function POST(request: NextRequest) {
       customerPhone: extractAustralianMobilePhone(body),
       customerEmail: sender.email ?? "",
       source: "email",
-      originalMessage,
-      emailNotificationsEnabled: ruleValue?.enabled === true
+      originalMessage: originalMessage || "No email content provided.",
+      emailNotificationsEnabled:
+        rules.get("email_notifications_enabled")?.enabled === true,
+      smsAlertsEnabled: rules.get("sms_alerts_enabled")?.enabled === true
     });
 
     return NextResponse.json({ ok: true });

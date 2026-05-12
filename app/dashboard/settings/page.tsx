@@ -153,6 +153,26 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
               </span>
             </label>
           </div>
+
+          <div className="md:col-span-2">
+            <label className="flex items-start gap-3 rounded-md border border-border bg-slate-50 p-4">
+              <input
+                className="mt-1 h-4 w-4 rounded border-border"
+                defaultChecked={settings.sms_alerts_enabled}
+                name="sms_alerts_enabled"
+                type="checkbox"
+              />
+              <span>
+                <span className="block text-sm font-medium text-slate-800">
+                  Send SMS alerts for new leads
+                </span>
+                <span className="mt-1 block text-sm leading-6 text-slate-600">
+                  When enabled, the business notification phone receives an SMS
+                  alert when any new lead is created.
+                </span>
+              </span>
+            </label>
+          </div>
         </div>
         <div className="flex justify-end border-t border-border px-6 py-4">
           <Button type="submit">Save settings</Button>

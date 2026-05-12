@@ -18,6 +18,7 @@ type CreateLeadForBusinessInput = {
   source: "manual" | "email" | "sms" | "website";
   originalMessage: string;
   emailNotificationsEnabled?: boolean;
+  smsAlertsEnabled?: boolean;
 };
 
 export async function createLeadForBusiness({
@@ -28,7 +29,8 @@ export async function createLeadForBusiness({
   customerEmail,
   source,
   originalMessage,
-  emailNotificationsEnabled = false
+  emailNotificationsEnabled = false,
+  smsAlertsEnabled = false
 }: CreateLeadForBusinessInput) {
   const normalizedPhone = customerPhone
     ? normalizeAustralianMobilePhone(customerPhone)
@@ -134,7 +136,8 @@ export async function createLeadForBusiness({
       leadName: customerName,
       phone: storedPhone,
       source,
-      extraction
+      extraction,
+      smsAlertsEnabled
     });
   } catch (error) {
     console.error("Lead SMS notification failed:", error);

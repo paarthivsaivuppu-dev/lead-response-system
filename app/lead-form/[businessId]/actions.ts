@@ -2,8 +2,46 @@
 
 import { redirect } from "next/navigation";
 import { createLeadForBusiness } from "@/lib/leads/create-lead";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { Business } from "@/lib/types";
+
+type NotificationRules = {
+  emailNotificationsEnabled: boolean;
+  smsAlertsEnabled: boolean;
+};
+
+async function getPublicLeadNotificationRules(
+  businessId: string
+): Promise<NotificationRules> {
+  try {
+    const admin = createAdminClient();
+    const { data } = await admin
+      .from("business_rules")
+      .select("rule_type, rule_value")
+      .eq("business_id", businessId)
+      .in("rule_type", ["email_notifications_enabled", "sms_alerts_enabled"]);
+
+    const rules = new Map(
+      (data ?? []).map((rule) => [
+        rule.rule_type,
+        rule.rule_value as { enabled?: boolean } | null | undefined
+      ])
+    );
+
+    return {
+      emailNotificationsEnabled:
+        rules.get("email_notifications_enabled")?.enabled === true,
+      smsAlertsEnabled: rules.get("sms_alerts_enabled")?.enabled === true
+    };
+  } catch (error) {
+    console.error("Public lead notification settings lookup failed:", error);
+    return {
+      emailNotificationsEnabled: false,
+      smsAlertsEnabled: false
+    };
+  }
+}
 
 export async function submitPublicLead(
   businessId: string,
@@ -33,16 +71,7 @@ export async function submitPublicLead(
     throw new Error("Form not found.");
   }
 
-  const { data: emailNotificationRule } = await supabase
-    .from("business_rules")
-    .select("rule_value")
-    .eq("business_id", businessId)
-    .eq("rule_type", "email_notifications_enabled")
-    .maybeSingle();
-  const ruleValue = emailNotificationRule?.rule_value as
-    | { enabled?: boolean }
-    | null
-    | undefined;
+  const notificationRules = await getPublicLeadNotificationRules(businessId);
 
   await createLeadForBusiness({
     supabase,
@@ -52,7 +81,8 @@ export async function submitPublicLead(
     customerEmail,
     source: "website",
     originalMessage,
-    emailNotificationsEnabled: ruleValue?.enabled === true
+    emailNotificationsEnabled: notificationRules.emailNotificationsEnabled,
+    smsAlertsEnabled: notificationRules.smsAlertsEnabled
   });
 
   redirect(`/lead-form/${businessId}?submitted=1`);

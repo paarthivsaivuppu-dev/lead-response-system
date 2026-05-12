@@ -57,15 +57,21 @@ export async function getBusinessSettings(
   const supabase = await createClient();
   const { data } = await supabase
     .from("business_rules")
-    .select("rule_value")
+    .select("rule_type, rule_value")
     .eq("business_id", businessId)
-    .eq("rule_type", "email_notifications_enabled")
-    .maybeSingle();
+    .in("rule_type", ["email_notifications_enabled", "sms_alerts_enabled"]);
 
-  const ruleValue = data?.rule_value as { enabled?: boolean } | null | undefined;
+  const rules = new Map(
+    (data ?? []).map((rule) => [
+      rule.rule_type,
+      rule.rule_value as { enabled?: boolean } | null | undefined
+    ])
+  );
 
   return {
-    email_notifications_enabled: ruleValue?.enabled === true
+    email_notifications_enabled:
+      rules.get("email_notifications_enabled")?.enabled === true,
+    sms_alerts_enabled: rules.get("sms_alerts_enabled")?.enabled === true
   };
 }
 
