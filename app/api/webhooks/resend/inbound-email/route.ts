@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { Resend } from "resend";
 import { createLeadForBusiness } from "@/lib/leads/create-lead";
 import { normalizeAustralianMobilePhone } from "@/lib/phone/normalize";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { Business } from "@/lib/types";
 
 type ResendInboundEvent = {
@@ -147,7 +147,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true, skipped: true });
     }
 
-    const supabase = await createClient();
+    console.log("Inbound email webhook: using Supabase admin client");
+    const supabase = createAdminClient();
     const { data: business } = await supabase
       .from("businesses")
       .select("*")

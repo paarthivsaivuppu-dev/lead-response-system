@@ -135,11 +135,11 @@ export async function createLeadForBusiness({
   }
 
   try {
-      const customerReply = await sendCustomerAutoReply({
-        leadName: customerName,
-        leadPhone: normalizedPhone?.ok ? normalizedPhone.value : null,
-        extraction
-      });
+    const customerReply = await sendCustomerAutoReply({
+      leadName: customerName,
+      leadPhone: normalizedPhone?.ok ? normalizedPhone.value : null,
+      extraction
+    });
 
     if (customerReply) {
       const { error: outboundMessageError } = await supabase.from("messages").insert({
