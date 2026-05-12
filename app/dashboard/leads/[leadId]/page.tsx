@@ -79,7 +79,9 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
         {lead.notes ? (
           <div className="mt-6 rounded-md bg-slate-50 p-4">
             <p className="text-xs font-semibold uppercase text-slate-500">Notes</p>
-            <p className="mt-2 text-sm leading-6 text-slate-700">{lead.notes}</p>
+            <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-700">
+              {lead.notes}
+            </p>
           </div>
         ) : null}
 
@@ -186,7 +188,9 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
                 <span>{message.channel}</span>
                 <span>{formatDate(message.created_at)}</span>
               </div>
-              <p className="mt-2 text-sm leading-6 text-slate-700">{message.body}</p>
+              <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-700">
+                {message.body}
+              </p>
             </div>
           ))}
           {messages.length === 0 ? (

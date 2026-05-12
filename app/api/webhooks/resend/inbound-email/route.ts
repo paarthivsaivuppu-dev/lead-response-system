@@ -214,13 +214,16 @@ export async function POST(request: NextRequest) {
     );
 
     const sender = parseEmailAddress(email.from ?? event.data?.from);
-    const subject = email.subject ?? event.data?.subject ?? "No subject";
+    const subject = (email.subject ?? event.data?.subject ?? "").trim();
     const body = email.text?.trim() || (email.html ? stripHtml(email.html) : "");
     const customerName =
       extractNameFromEmailBody(body) || sender.name || sender.email || "Email enquiry";
-    const originalMessage = [`Subject: ${subject}`, "", body || "No body provided."]
-      .join("\n")
-      .trim();
+    const originalMessage = [
+      subject ? `Subject: ${subject}` : null,
+      body || null
+    ]
+      .filter(Boolean)
+      .join("\n\n");
 
     await createLeadForBusiness({
       supabase,
