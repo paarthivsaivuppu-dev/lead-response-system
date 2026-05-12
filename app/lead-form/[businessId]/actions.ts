@@ -33,6 +33,17 @@ export async function submitPublicLead(
     throw new Error("Form not found.");
   }
 
+  const { data: emailNotificationRule } = await supabase
+    .from("business_rules")
+    .select("rule_value")
+    .eq("business_id", businessId)
+    .eq("rule_type", "email_notifications_enabled")
+    .maybeSingle();
+  const ruleValue = emailNotificationRule?.rule_value as
+    | { enabled?: boolean }
+    | null
+    | undefined;
+
   await createLeadForBusiness({
     supabase,
     business: business as Business,
@@ -40,7 +51,8 @@ export async function submitPublicLead(
     customerPhone,
     customerEmail,
     source: "website",
-    originalMessage
+    originalMessage,
+    emailNotificationsEnabled: ruleValue?.enabled === true
   });
 
   redirect(`/lead-form/${businessId}?submitted=1`);

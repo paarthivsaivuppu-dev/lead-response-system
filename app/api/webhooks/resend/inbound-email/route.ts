@@ -201,6 +201,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true, skipped: true });
     }
 
+    const { data: emailNotificationRule } = await supabase
+      .from("business_rules")
+      .select("rule_value")
+      .eq("business_id", business.id)
+      .eq("rule_type", "email_notifications_enabled")
+      .maybeSingle();
+    const ruleValue = emailNotificationRule?.rule_value as
+      | { enabled?: boolean }
+      | null
+      | undefined;
+
     const sender = parseEmailAddress(email.from ?? event.data?.from);
     const subject = email.subject ?? event.data?.subject ?? "No subject";
     const body = email.text?.trim() || (email.html ? stripHtml(email.html) : "");
@@ -217,7 +228,8 @@ export async function POST(request: NextRequest) {
       customerPhone: extractAustralianMobilePhone(body),
       customerEmail: sender.email ?? "",
       source: "email",
-      originalMessage
+      originalMessage,
+      emailNotificationsEnabled: ruleValue?.enabled === true
     });
 
     return NextResponse.json({ ok: true });

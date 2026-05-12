@@ -21,6 +21,10 @@ export type Business = {
   created_at: string;
 };
 
+export type BusinessSettings = {
+  email_notifications_enabled: boolean;
+};
+
 export type Lead = {
   id: string;
   business_id: string;

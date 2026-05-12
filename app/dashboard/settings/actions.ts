@@ -25,6 +25,8 @@ export async function updateBusinessSettings(formData: FormData) {
     .trim()
     .toLowerCase();
   const replyTone = String(formData.get("reply_tone") ?? "").trim();
+  const emailNotificationsEnabled =
+    formData.get("email_notifications_enabled") === "on";
 
   if (!businessName) {
     throw new Error("Business name is required.");
@@ -62,6 +64,24 @@ export async function updateBusinessSettings(formData: FormData) {
 
   if (ruleError) {
     throw new Error(ruleError.message);
+  }
+
+  const { error: emailRuleError } = await supabase.from("business_rules").upsert(
+    {
+      business_id: business.id,
+      rule_type: "email_notifications_enabled",
+      rule_value: {
+        enabled: emailNotificationsEnabled
+      },
+      updated_at: new Date().toISOString()
+    },
+    {
+      onConflict: "business_id,rule_type"
+    }
+  );
+
+  if (emailRuleError) {
+    throw new Error(emailRuleError.message);
   }
 
   revalidatePath("/dashboard");

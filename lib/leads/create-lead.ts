@@ -17,6 +17,7 @@ type CreateLeadForBusinessInput = {
   customerEmail: string;
   source: "manual" | "email" | "sms" | "website";
   originalMessage: string;
+  emailNotificationsEnabled?: boolean;
 };
 
 export async function createLeadForBusiness({
@@ -26,7 +27,8 @@ export async function createLeadForBusiness({
   customerPhone,
   customerEmail,
   source,
-  originalMessage
+  originalMessage,
+  emailNotificationsEnabled = false
 }: CreateLeadForBusinessInput) {
   const normalizedPhone = customerPhone
     ? normalizeAustralianMobilePhone(customerPhone)
@@ -106,19 +108,23 @@ export async function createLeadForBusiness({
       .eq("business_id", business.id);
   }
 
-  try {
-    await sendLeadNotificationEmail({
-      to: business.notification_email,
-      leadId: lead.id,
-      leadName: customerName,
-      phone: storedPhone,
-      email: customerEmail || null,
-      source,
-      originalMessage,
-      extraction
-    });
-  } catch (error) {
-    console.error("Lead notification email failed:", error);
+  if (!emailNotificationsEnabled) {
+    console.log("Business email notification skipped: email notifications disabled");
+  } else {
+    try {
+      await sendLeadNotificationEmail({
+        to: business.notification_email,
+        leadId: lead.id,
+        leadName: customerName,
+        phone: storedPhone,
+        email: customerEmail || null,
+        source,
+        originalMessage,
+        extraction
+      });
+    } catch (error) {
+      console.error("Lead notification email failed:", error);
+    }
   }
 
   try {

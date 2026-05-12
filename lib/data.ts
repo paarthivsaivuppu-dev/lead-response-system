@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import type { Business, Lead, Message } from "@/lib/types";
+import type { Business, BusinessSettings, Lead, Message } from "@/lib/types";
 
 type BusinessUserJoin = {
   businesses: Business | Business[] | null;
@@ -49,6 +49,24 @@ export async function getLeadsForCurrentBusiness() {
     .order("created_at", { ascending: false });
 
   return { business, leads: (data ?? []) as Lead[] };
+}
+
+export async function getBusinessSettings(
+  businessId: string
+): Promise<BusinessSettings> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("business_rules")
+    .select("rule_value")
+    .eq("business_id", businessId)
+    .eq("rule_type", "email_notifications_enabled")
+    .maybeSingle();
+
+  const ruleValue = data?.rule_value as { enabled?: boolean } | null | undefined;
+
+  return {
+    email_notifications_enabled: ruleValue?.enabled === true
+  };
 }
 
 export async function getLeadDetail(leadId: string) {

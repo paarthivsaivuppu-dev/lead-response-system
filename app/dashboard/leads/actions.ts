@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createLeadForBusiness } from "@/lib/leads/create-lead";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentBusiness } from "@/lib/data";
+import { getBusinessSettings, getCurrentBusiness } from "@/lib/data";
 import { leadStatuses, type LeadStatus } from "@/lib/types";
 
 const sourceOptions = ["manual", "email", "sms", "website"] as const;
@@ -101,6 +101,7 @@ export async function createLead(formData: FormData) {
   }
 
   const supabase = await createClient();
+  const settings = await getBusinessSettings(business.id);
   const { leadId } = await createLeadForBusiness({
     supabase,
     business,
@@ -108,7 +109,8 @@ export async function createLead(formData: FormData) {
     customerPhone,
     customerEmail,
     source: source as "manual" | "email" | "sms" | "website",
-    originalMessage
+    originalMessage,
+    emailNotificationsEnabled: settings.email_notifications_enabled
   });
 
   revalidatePath("/dashboard");

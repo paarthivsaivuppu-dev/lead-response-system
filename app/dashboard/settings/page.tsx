@@ -1,7 +1,7 @@
 import { EmptyBusiness } from "@/components/dashboard/empty-business";
 import { Button } from "@/components/ui/button";
 import { updateBusinessSettings } from "@/app/dashboard/settings/actions";
-import { getCurrentBusiness } from "@/lib/data";
+import { getBusinessSettings, getCurrentBusiness } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +18,8 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
   if (!business) {
     return <EmptyBusiness />;
   }
+
+  const settings = await getBusinessSettings(business.id);
 
   return (
     <div className="space-y-6">
@@ -130,6 +132,26 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
               address. Resend receives those emails and sends them to this app's
               webhook.
             </p>
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="flex items-start gap-3 rounded-md border border-border bg-slate-50 p-4">
+              <input
+                className="mt-1 h-4 w-4 rounded border-border"
+                defaultChecked={settings.email_notifications_enabled}
+                name="email_notifications_enabled"
+                type="checkbox"
+              />
+              <span>
+                <span className="block text-sm font-medium text-slate-800">
+                  Send email notifications for new leads
+                </span>
+                <span className="mt-1 block text-sm leading-6 text-slate-600">
+                  When enabled, the business notification email receives an
+                  alert when any new lead is created.
+                </span>
+              </span>
+            </label>
           </div>
         </div>
         <div className="flex justify-end border-t border-border px-6 py-4">
