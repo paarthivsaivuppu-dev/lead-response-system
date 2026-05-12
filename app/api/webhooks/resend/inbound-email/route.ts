@@ -68,6 +68,47 @@ function extractAustralianMobilePhone(value: string) {
   return "";
 }
 
+function cleanPossibleName(value: string) {
+  const cleaned = value
+    .replace(/[^\p{L}\s'-]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  const words = cleaned.split(" ").filter(Boolean);
+
+  if (words.length < 2 || words.length > 4) {
+    return null;
+  }
+
+  if (words.some((word) => word.length < 2)) {
+    return null;
+  }
+
+  return words
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+function extractNameFromEmailBody(value: string) {
+  const patterns = [
+    /\bmy name is\s+([^\n.!,?]+)/i,
+    /\bi['’]?m\s+([^\n.!,?]+)/i,
+    /\bi am\s+([^\n.!,?]+)/i,
+    /\bthis is\s+([^\n.!,?]+)/i,
+    /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})\s+here\b/
+  ];
+
+  for (const pattern of patterns) {
+    const match = value.match(pattern);
+    const name = cleanPossibleName(match?.[1] ?? "");
+
+    if (name) {
+      return name;
+    }
+  }
+
+  return null;
+}
+
 async function parseWebhookEvent(request: NextRequest) {
   const payload = await request.text();
   const webhookSecret = process.env.RESEND_WEBHOOK_SECRET;
@@ -163,6 +204,8 @@ export async function POST(request: NextRequest) {
     const sender = parseEmailAddress(email.from ?? event.data?.from);
     const subject = email.subject ?? event.data?.subject ?? "No subject";
     const body = email.text?.trim() || (email.html ? stripHtml(email.html) : "");
+    const customerName =
+      extractNameFromEmailBody(body) || sender.name || sender.email || "Email enquiry";
     const originalMessage = [`Subject: ${subject}`, "", body || "No body provided."]
       .join("\n")
       .trim();
@@ -170,7 +213,7 @@ export async function POST(request: NextRequest) {
     await createLeadForBusiness({
       supabase,
       business: business as Business,
-      customerName: sender.name || sender.email || "Email enquiry",
+      customerName,
       customerPhone: extractAustralianMobilePhone(body),
       customerEmail: sender.email ?? "",
       source: "email",

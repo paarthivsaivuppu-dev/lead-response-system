@@ -10,17 +10,28 @@ type CustomerAutoReplyInput = {
 };
 
 function firstName(fullName: string) {
-  return fullName.trim().split(/\s+/)[0] || "there";
+  const first = fullName.trim().split(/\s+/)[0] ?? "";
+
+  if (!first || first.includes("@") || !/^[A-Za-z][A-Za-z'-]{1,40}$/.test(first)) {
+    return null;
+  }
+
+  return first;
 }
 
 export function buildCustomerAutoReply(input: CustomerAutoReplyInput) {
+  const name = firstName(input.leadName);
   const service = getPrivacySafeServiceLabel(input.extraction?.service_requested);
 
-  if (!service) {
-    return `Hi ${firstName(input.leadName)}, thanks for reaching out. The team has received your enquiry and will get back to you shortly.`;
+  if (!name) {
+    return "Hi, thanks for reaching out. The team has received your enquiry and will get back to you shortly.";
   }
 
-  return `Hi ${firstName(input.leadName)}, thanks for reaching out about ${service.toLowerCase()}. The team has received your enquiry and will get back to you shortly.`;
+  if (!service) {
+    return `Hi ${name}, thanks for reaching out. The team has received your enquiry and will get back to you shortly.`;
+  }
+
+  return `Hi ${name}, thanks for reaching out about ${service.toLowerCase()}. The team has received your enquiry and will get back to you shortly.`;
 }
 
 export async function sendCustomerAutoReply(input: CustomerAutoReplyInput) {
