@@ -1,13 +1,13 @@
 import type { LeadStatus } from "@/lib/types";
 
 const statusStyles: Record<LeadStatus, string> = {
-  New: "bg-blue-50 text-blue-700 ring-blue-200",
-  Contacted: "bg-sky-50 text-sky-700 ring-sky-200",
-  Replied: "bg-emerald-50 text-emerald-700 ring-emerald-200",
-  "Ready for Staff": "bg-violet-50 text-violet-700 ring-violet-200",
-  Booked: "bg-green-50 text-green-700 ring-green-200",
+  New: "bg-cyan-50 text-accent ring-cyan-200",
+  Contacted: "bg-teal-100 text-teal-800 ring-teal-200",
+  Replied: "bg-emerald-50 text-emerald-800 ring-emerald-200",
+  "Ready for Staff": "bg-indigo-50 text-indigo-700 ring-indigo-200",
+  Booked: "bg-green-50 text-green-800 ring-green-200",
   Lost: "bg-slate-100 text-slate-700 ring-slate-200",
-  Invalid: "bg-red-50 text-red-700 ring-red-200",
+  Invalid: "bg-rose-50 text-rose-700 ring-rose-200",
   "Needs Review": "bg-amber-50 text-amber-800 ring-amber-200"
 };
 

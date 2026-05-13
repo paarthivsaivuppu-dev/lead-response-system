@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BarChart3, LayoutDashboard, Settings } from "lucide-react";
+import { DashboardStatusNotices } from "@/components/dashboard/status-notices";
+import { getBusinessSettings, getCurrentBusiness } from "@/lib/data";
 import { getSmsSafetyConfig } from "@/lib/sms/config";
 import { createClient } from "@/lib/supabase/server";
 
@@ -27,13 +29,29 @@ export default async function DashboardLayout({
   }
 
   const smsConfig = getSmsSafetyConfig();
+  const business = await getCurrentBusiness();
+  const businessSettings = business
+    ? await getBusinessSettings(business.id)
+    : null;
+  const showCustomerSmsTestNotice =
+    smsConfig.customerSmsAutoReplyEnabled && smsConfig.customerSmsTestMode;
+  const showBusinessSmsOffNotice =
+    Boolean(business) &&
+    (!smsConfig.businessSmsAlertsEnabled ||
+      businessSettings?.sms_alerts_enabled !== true);
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-white">
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="sticky top-0 z-10 border-b border-border/80 bg-white/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link className="text-base font-semibold text-slate-950" href="/dashboard">
-            Lead Response
+          <Link
+            className="inline-flex items-center gap-2 text-base font-semibold text-foreground"
+            href="/dashboard"
+          >
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-accent text-sm font-semibold text-white shadow-sm">
+              L
+            </span>
+            LeadResponse AI
           </Link>
           <nav className="flex items-center gap-1">
             {navItems.map((item) => {
@@ -41,7 +59,7 @@ export default async function DashboardLayout({
 
               return (
                 <Link
-                  className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-950"
+                  className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted transition hover:bg-cyan-50 hover:text-accent"
                   href={item.href}
                   key={item.href}
                 >
@@ -53,18 +71,13 @@ export default async function DashboardLayout({
           </nav>
         </div>
       </header>
-      {smsConfig.customerSmsTestMode ? (
-        <div className="border-b border-amber-200 bg-amber-50 px-6 py-3 text-center text-sm font-medium text-amber-900">
-          Customer SMS Test Mode is ON — customer replies are being sent to the
-          test phone number.
-        </div>
-      ) : null}
-      {!smsConfig.businessSmsAlertsEnabled ? (
-        <div className="border-b border-slate-200 bg-slate-100 px-6 py-2 text-center text-sm font-medium text-slate-700">
-          Business SMS alerts are OFF.
-        </div>
-      ) : null}
-      <main className="mx-auto max-w-6xl px-6 py-8">{children}</main>
+      <main className="mx-auto max-w-6xl px-6 py-10">
+        <DashboardStatusNotices
+          showBusinessSmsOffNotice={showBusinessSmsOffNotice}
+          showCustomerSmsTestNotice={showCustomerSmsTestNotice}
+        />
+        {children}
+      </main>
     </div>
   );
 }

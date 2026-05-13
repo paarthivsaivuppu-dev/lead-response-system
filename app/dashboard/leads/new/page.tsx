@@ -14,33 +14,37 @@ export default async function NewLeadPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       <Link
-        className="text-sm font-medium text-slate-600 underline-offset-4 hover:text-slate-950 hover:underline"
+        className="text-sm font-medium text-muted underline-offset-4 hover:text-accent hover:underline"
         href="/dashboard/leads"
       >
         Back to leads
       </Link>
 
       <section>
-        <p className="text-sm font-medium text-muted">{business.name}</p>
-        <h1 className="mt-1 text-3xl font-semibold text-slate-950">New Lead</h1>
+        <p className="page-kicker">{business.name}</p>
+        <h1 className="page-title">New Lead</h1>
+        <p className="mt-3 max-w-2xl muted-copy">
+          Add a manual enquiry and let the system capture the structured lead
+          details.
+        </p>
       </section>
 
       <form
         action={createLead}
-        className="rounded-lg border border-border bg-white p-6 shadow-soft"
+        className="app-card p-6"
       >
         <div className="grid gap-5 md:grid-cols-2">
           <div>
             <label
-              className="text-sm font-medium text-slate-700"
+              className="app-label"
               htmlFor="customer_name"
             >
               Customer name
             </label>
             <input
-              className="mt-2 w-full rounded-md border border-border bg-white px-3 py-2.5 text-sm outline-none ring-slate-900/10 focus:ring-4"
+              className="app-input"
               id="customer_name"
               name="customer_name"
               placeholder="Sarah Mitchell"
@@ -51,13 +55,13 @@ export default async function NewLeadPage() {
 
           <div>
             <label
-              className="text-sm font-medium text-slate-700"
+              className="app-label"
               htmlFor="source"
             >
               Source
             </label>
             <select
-              className="mt-2 w-full rounded-md border border-border bg-white px-3 py-2.5 text-sm outline-none ring-slate-900/10 focus:ring-4"
+              className="app-input"
               defaultValue="manual"
               id="source"
               name="source"
@@ -71,13 +75,13 @@ export default async function NewLeadPage() {
 
           <div>
             <label
-              className="text-sm font-medium text-slate-700"
+              className="app-label"
               htmlFor="customer_phone"
             >
               Customer phone
             </label>
             <input
-              className="mt-2 w-full rounded-md border border-border bg-white px-3 py-2.5 text-sm outline-none ring-slate-900/10 focus:ring-4"
+              className="app-input"
               id="customer_phone"
               name="customer_phone"
               placeholder="0424 718 402"
@@ -87,13 +91,13 @@ export default async function NewLeadPage() {
 
           <div>
             <label
-              className="text-sm font-medium text-slate-700"
+              className="app-label"
               htmlFor="customer_email"
             >
               Customer email
             </label>
             <input
-              className="mt-2 w-full rounded-md border border-border bg-white px-3 py-2.5 text-sm outline-none ring-slate-900/10 focus:ring-4"
+              className="app-input"
               id="customer_email"
               name="customer_email"
               placeholder="customer@example.com"
@@ -103,13 +107,13 @@ export default async function NewLeadPage() {
 
           <div className="md:col-span-2">
             <label
-              className="text-sm font-medium text-slate-700"
+              className="app-label"
               htmlFor="original_message"
             >
               Original message
             </label>
             <textarea
-              className="mt-2 min-h-32 w-full resize-y rounded-md border border-border bg-white px-3 py-2.5 text-sm outline-none ring-slate-900/10 focus:ring-4"
+              className="app-input min-h-32 resize-y"
               id="original_message"
               name="original_message"
               placeholder="What did the customer ask for?"
@@ -119,7 +123,7 @@ export default async function NewLeadPage() {
 
         <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
           <Link
-            className="inline-flex min-h-10 items-center justify-center rounded-md border border-border bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+            className="inline-flex min-h-10 items-center justify-center rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-cyan-50"
             href="/dashboard/leads"
           >
             Cancel

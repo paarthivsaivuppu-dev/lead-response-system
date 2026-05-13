@@ -28,10 +28,10 @@ export default async function PublicLeadFormPage({
 
   if (!business) {
     return (
-      <main className="flex min-h-screen items-center justify-center px-6">
-        <section className="w-full max-w-lg rounded-lg border border-border bg-white p-8 text-center shadow-soft">
-          <h1 className="text-2xl font-semibold text-slate-950">Form not found</h1>
-          <p className="mt-3 text-sm leading-6 text-slate-600">
+      <main className="flex min-h-screen items-center justify-center bg-background px-6">
+        <section className="app-card w-full max-w-lg p-8 text-center">
+          <h1 className="text-2xl font-semibold text-foreground">Form not found</h1>
+          <p className="mt-3 muted-copy">
             This enquiry form is not available.
           </p>
         </section>
@@ -43,10 +43,13 @@ export default async function PublicLeadFormPage({
 
   if (submitted === "1") {
     return (
-      <main className="flex min-h-screen items-center justify-center px-6">
-        <section className="w-full max-w-lg rounded-lg border border-border bg-white p-8 text-center shadow-soft">
-          <p className="text-sm font-medium text-muted">{currentBusiness.name}</p>
-          <h1 className="mt-2 text-2xl font-semibold text-slate-950">
+      <main className="flex min-h-screen items-center justify-center bg-background px-6">
+        <section className="app-card w-full max-w-lg p-8 text-center">
+          <div className="mx-auto mb-5 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-accent text-sm font-semibold text-white">
+            L
+          </div>
+          <p className="page-kicker">{currentBusiness.name}</p>
+          <h1 className="mt-2 text-2xl font-semibold text-foreground">
             Thanks — your enquiry has been received.
           </h1>
         </section>
@@ -57,27 +60,33 @@ export default async function PublicLeadFormPage({
   return (
     <main className="min-h-screen bg-background px-6 py-10">
       <section className="mx-auto w-full max-w-2xl">
-        <div className="mb-6">
-          <p className="text-sm font-medium text-muted">{currentBusiness.name}</p>
-          <h1 className="mt-2 text-3xl font-semibold text-slate-950">
+        <div className="mb-6 text-center">
+          <div className="mx-auto mb-5 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-accent text-sm font-semibold text-white shadow-sm">
+            L
+          </div>
+          <p className="page-kicker">{currentBusiness.name}</p>
+          <h1 className="mt-2 text-3xl font-semibold text-foreground">
             Send an enquiry
           </h1>
+          <p className="mx-auto mt-3 max-w-xl muted-copy">
+            Share a few details and the team will receive your enquiry.
+          </p>
         </div>
 
         <form
           action={submitPublicLead.bind(null, currentBusiness.id)}
-          className="rounded-lg border border-border bg-white p-6 shadow-soft"
+          className="app-card p-6"
         >
           <div className="grid gap-5 md:grid-cols-2">
             <div className="md:col-span-2">
               <label
-                className="text-sm font-medium text-slate-700"
+                className="app-label"
                 htmlFor="customer_name"
               >
                 Name
               </label>
               <input
-                className="mt-2 w-full rounded-md border border-border bg-white px-3 py-2.5 text-sm outline-none ring-slate-900/10 focus:ring-4"
+                className="app-input"
                 id="customer_name"
                 name="customer_name"
                 required
@@ -87,13 +96,13 @@ export default async function PublicLeadFormPage({
 
             <div>
               <label
-                className="text-sm font-medium text-slate-700"
+                className="app-label"
                 htmlFor="customer_phone"
               >
                 Phone
               </label>
               <input
-                className="mt-2 w-full rounded-md border border-border bg-white px-3 py-2.5 text-sm outline-none ring-slate-900/10 focus:ring-4"
+                className="app-input"
                 id="customer_phone"
                 name="customer_phone"
                 placeholder="0424 718 402"
@@ -103,13 +112,13 @@ export default async function PublicLeadFormPage({
 
             <div>
               <label
-                className="text-sm font-medium text-slate-700"
+                className="app-label"
                 htmlFor="customer_email"
               >
                 Email
               </label>
               <input
-                className="mt-2 w-full rounded-md border border-border bg-white px-3 py-2.5 text-sm outline-none ring-slate-900/10 focus:ring-4"
+                className="app-input"
                 id="customer_email"
                 name="customer_email"
                 type="email"
@@ -118,13 +127,13 @@ export default async function PublicLeadFormPage({
 
             <div className="md:col-span-2">
               <label
-                className="text-sm font-medium text-slate-700"
+                className="app-label"
                 htmlFor="original_message"
               >
                 Message
               </label>
               <textarea
-                className="mt-2 min-h-36 w-full resize-y rounded-md border border-border bg-white px-3 py-2.5 text-sm outline-none ring-slate-900/10 focus:ring-4"
+                className="app-input min-h-36 resize-y"
                 id="original_message"
                 name="original_message"
                 required
@@ -134,7 +143,7 @@ export default async function PublicLeadFormPage({
 
           <div className="mt-6 flex justify-end">
             <button
-              className="inline-flex min-h-10 items-center justify-center rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
+              className="inline-flex min-h-10 items-center justify-center rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-accent-dark"
               type="submit"
             >
               Send enquiry

@@ -22,159 +22,166 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
   const settings = await getBusinessSettings(business.id);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       <section>
-        <p className="text-sm font-medium text-muted">{business.name}</p>
-        <h1 className="mt-1 text-3xl font-semibold text-slate-950">Settings</h1>
+        <p className="page-kicker">{business.name}</p>
+        <h1 className="page-title">Settings</h1>
+        <p className="mt-3 max-w-2xl muted-copy">
+          Control business details, team notifications, and safe communication
+          settings from one place.
+        </p>
       </section>
 
       {saved === "1" ? (
-        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
           Settings saved.
         </div>
       ) : null}
 
       <form
         action={updateBusinessSettings}
-        className="rounded-lg border border-border bg-white shadow-soft"
+        className="space-y-5"
       >
-        <div className="border-b border-border px-6 py-4">
-          <h2 className="text-base font-semibold text-slate-950">
-            Business details
-          </h2>
-        </div>
-        <div className="grid gap-5 p-6 md:grid-cols-2">
-          <div>
-            <label
-              className="text-sm font-medium text-slate-700"
-              htmlFor="business_name"
-            >
-              Business name
-            </label>
-            <input
-              className="mt-2 w-full rounded-md border border-border bg-white px-3 py-2.5 text-sm outline-none ring-slate-900/10 focus:ring-4"
-              defaultValue={business.name}
-              id="business_name"
-              name="business_name"
-              required
-              type="text"
-            />
+        <section className="app-card overflow-hidden">
+          <div className="app-card-header">
+            <h2 className="section-title">Business details</h2>
           </div>
-
-          <div>
-            <label
-              className="text-sm font-medium text-slate-700"
-              htmlFor="notification_email"
-            >
-              Notification email
-            </label>
-            <input
-              className="mt-2 w-full rounded-md border border-border bg-white px-3 py-2.5 text-sm outline-none ring-slate-900/10 focus:ring-4"
-              defaultValue={business.notification_email ?? ""}
-              id="notification_email"
-              name="notification_email"
-              placeholder="owner@example.com"
-              type="email"
-            />
-          </div>
-
-          <div>
-            <label
-              className="text-sm font-medium text-slate-700"
-              htmlFor="notification_phone"
-            >
-              Notification phone
-            </label>
-            <input
-              className="mt-2 w-full rounded-md border border-border bg-white px-3 py-2.5 text-sm outline-none ring-slate-900/10 focus:ring-4"
-              defaultValue={business.notification_phone ?? ""}
-              id="notification_phone"
-              name="notification_phone"
-              placeholder="+61 400 000 000"
-              type="tel"
-            />
-          </div>
-
-          <div>
-            <label
-              className="text-sm font-medium text-slate-700"
-              htmlFor="reply_tone"
-            >
-              Reply tone
-            </label>
-            <input
-              className="mt-2 w-full rounded-md border border-border bg-white px-3 py-2.5 text-sm outline-none ring-slate-900/10 focus:ring-4"
-              defaultValue={business.reply_tone ?? "Friendly and professional"}
-              id="reply_tone"
-              name="reply_tone"
-              placeholder="Friendly and professional"
-              type="text"
-            />
-          </div>
-
-          <div className="md:col-span-2">
-            <label
-              className="text-sm font-medium text-slate-700"
-              htmlFor="inbound_email_alias"
-            >
-              Inbound email alias
-            </label>
-            <input
-              className="mt-2 w-full rounded-md border border-border bg-white px-3 py-2.5 text-sm outline-none ring-slate-900/10 focus:ring-4"
-              defaultValue={business.inbound_email_alias ?? ""}
-              id="inbound_email_alias"
-              name="inbound_email_alias"
-              placeholder="northside"
-              type="text"
-            />
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              Client setup: forward enquiry emails to the assigned inbound
-              address. Resend receives those emails and sends them to this app's
-              webhook.
-            </p>
-          </div>
-
-          <div className="md:col-span-2">
-            <label className="flex items-start gap-3 rounded-md border border-border bg-slate-50 p-4">
+          <div className="grid gap-5 p-6 md:grid-cols-2">
+            <div>
+              <label className="app-label" htmlFor="business_name">
+                Business name
+              </label>
               <input
-                className="mt-1 h-4 w-4 rounded border-border"
-                defaultChecked={settings.email_notifications_enabled}
-                name="email_notifications_enabled"
-                type="checkbox"
+                className="app-input"
+                defaultValue={business.name}
+                id="business_name"
+                name="business_name"
+                required
+                type="text"
               />
-              <span>
-                <span className="block text-sm font-medium text-slate-800">
-                  Send email notifications for new leads
-                </span>
-                <span className="mt-1 block text-sm leading-6 text-slate-600">
-                  When enabled, the business notification email receives an
-                  alert when any new lead is created.
-                </span>
-              </span>
-            </label>
-          </div>
+            </div>
 
-          <div className="md:col-span-2">
-            <label className="flex items-start gap-3 rounded-md border border-border bg-slate-50 p-4">
+            <div>
+              <label className="app-label" htmlFor="reply_tone">
+                Reply tone
+              </label>
               <input
-                className="mt-1 h-4 w-4 rounded border-border"
+                className="app-input"
+                defaultValue={business.reply_tone ?? "Friendly and professional"}
+                id="reply_tone"
+                name="reply_tone"
+                placeholder="Friendly and professional"
+                type="text"
+              />
+            </div>
+          </div>
+        </section>
+
+        <section className="app-card overflow-hidden">
+          <div className="app-card-header">
+            <h2 className="section-title">Notification settings</h2>
+          </div>
+          <div className="grid gap-5 p-6 md:grid-cols-2">
+            <div>
+              <label className="app-label" htmlFor="notification_email">
+                Notification email
+              </label>
+              <input
+                className="app-input"
+                defaultValue={business.notification_email ?? ""}
+                id="notification_email"
+                name="notification_email"
+                placeholder="owner@example.com"
+                type="email"
+              />
+            </div>
+
+            <div>
+              <label className="app-label" htmlFor="notification_phone">
+                Notification phone
+              </label>
+              <input
+                className="app-input"
+                defaultValue={business.notification_phone ?? ""}
+                id="notification_phone"
+                name="notification_phone"
+                placeholder="0424 718 402"
+                type="tel"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="flex items-start gap-3 rounded-xl border border-border bg-cyan-50/45 p-4">
+                <input
+                  className="mt-1 h-4 w-4 rounded border-border accent-[#007c95]"
+                  defaultChecked={settings.email_notifications_enabled}
+                  name="email_notifications_enabled"
+                  type="checkbox"
+                />
+                <span>
+                  <span className="block text-sm font-medium text-foreground">
+                    Send email notifications for new leads
+                  </span>
+                  <span className="mt-1 block muted-copy">
+                    When enabled, the business notification email receives an
+                    alert when any new lead is created.
+                  </span>
+                </span>
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <section className="app-card overflow-hidden">
+          <div className="app-card-header">
+            <h2 className="section-title">SMS safety/settings</h2>
+          </div>
+          <div className="p-6">
+            <label className="flex items-start gap-3 rounded-xl border border-border bg-cyan-50/45 p-4">
+              <input
+                className="mt-1 h-4 w-4 rounded border-border accent-[#007c95]"
                 defaultChecked={settings.sms_alerts_enabled}
                 name="sms_alerts_enabled"
                 type="checkbox"
               />
               <span>
-                <span className="block text-sm font-medium text-slate-800">
+                <span className="block text-sm font-medium text-foreground">
                   Send SMS alerts for new leads
                 </span>
-                <span className="mt-1 block text-sm leading-6 text-slate-600">
+                <span className="mt-1 block muted-copy">
                   When enabled, the business notification phone receives an SMS
                   alert when any new lead is created.
                 </span>
               </span>
             </label>
           </div>
-        </div>
-        <div className="flex justify-end border-t border-border px-6 py-4">
+        </section>
+
+        <section className="app-card overflow-hidden">
+          <div className="app-card-header">
+            <h2 className="section-title">Inbound email setup</h2>
+          </div>
+          <div className="p-6">
+            <label className="app-label" htmlFor="inbound_email_alias">
+              Inbound email alias
+            </label>
+            <input
+              className="app-input"
+              defaultValue={business.inbound_email_alias ?? ""}
+              id="inbound_email_alias"
+              name="inbound_email_alias"
+              placeholder="northside"
+              type="text"
+            />
+            <p className="mt-3 muted-copy">
+              Client setup: forward enquiry emails to the assigned inbound
+              address. Resend receives those emails and sends them to this app's
+              webhook.
+            </p>
+          </div>
+        </section>
+
+        <div className="app-card flex justify-end px-6 py-4">
           <Button type="submit">Save settings</Button>
         </div>
       </form>

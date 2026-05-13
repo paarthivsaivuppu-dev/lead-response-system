@@ -19,6 +19,7 @@ export function StatusButtons({ leadId, currentStatus }: StatusButtonsProps) {
           key={status}
         >
           <Button
+            className="min-h-9 px-3"
             type="submit"
             variant={status === currentStatus ? "primary" : "outline"}
           >

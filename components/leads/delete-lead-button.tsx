@@ -25,7 +25,7 @@ export function DeleteLeadButton({ leadId, leadName }: DeleteLeadButtonProps) {
       }}
     >
       <Button
-        className="border-red-200 text-red-700 hover:bg-red-50"
+        className="border-rose-200 text-rose-700 hover:bg-rose-50"
         type="submit"
         variant="outline"
       >

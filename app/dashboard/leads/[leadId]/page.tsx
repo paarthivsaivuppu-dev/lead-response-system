@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DeleteLeadButton } from "@/components/leads/delete-lead-button";
+import { SourceBadge } from "@/components/leads/source-badge";
 import { StatusBadge } from "@/components/leads/status-badge";
 import { StatusButtons } from "@/components/leads/status-buttons";
 import { EmptyBusiness } from "@/components/dashboard/empty-business";
@@ -37,22 +38,22 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       <Link
-        className="text-sm font-medium text-slate-600 underline-offset-4 hover:text-slate-950 hover:underline"
+        className="text-sm font-medium text-muted underline-offset-4 hover:text-accent hover:underline"
         href="/dashboard/leads"
       >
         Back to leads
       </Link>
 
-      <section className="rounded-lg border border-border bg-white p-6 shadow-soft">
+      <section className="app-card p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-medium text-muted">{business.name}</p>
-            <h1 className="mt-1 text-3xl font-semibold text-slate-950">
+            <p className="page-kicker">{business.name}</p>
+            <h1 className="page-title">
               {lead.full_name}
             </h1>
-            <p className="mt-2 text-sm text-slate-600">
+            <p className="mt-2 text-sm text-muted">
               Created {formatDate(lead.created_at)}
             </p>
           </div>
@@ -60,24 +61,24 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
         </div>
 
         <div className="mt-6 grid gap-4 md:grid-cols-3">
-          <div>
+          <div className="rounded-xl border border-border bg-cyan-50/40 p-4">
             <p className="text-xs font-semibold uppercase text-slate-500">Email</p>
-            <p className="mt-1 text-sm text-slate-900">{lead.email ?? "Not added"}</p>
+            <p className="mt-1 text-sm text-foreground">{lead.email ?? "Not added"}</p>
           </div>
-          <div>
+          <div className="rounded-xl border border-border bg-cyan-50/40 p-4">
             <p className="text-xs font-semibold uppercase text-slate-500">Phone</p>
-            <p className="mt-1 text-sm text-slate-900">{lead.phone ?? "Not added"}</p>
+            <p className="mt-1 text-sm text-foreground">{lead.phone ?? "Not added"}</p>
           </div>
-          <div>
+          <div className="rounded-xl border border-border bg-cyan-50/40 p-4">
             <p className="text-xs font-semibold uppercase text-slate-500">Source</p>
-            <p className="mt-1 text-sm text-slate-900">
-              {formatLabel(lead.source)}
-            </p>
+            <div className="mt-2">
+              <SourceBadge source={lead.source} />
+            </div>
           </div>
         </div>
 
         {lead.notes ? (
-          <div className="mt-6 rounded-md bg-slate-50 p-4">
+          <div className="mt-6 rounded-xl border border-border bg-slate-50/80 p-4">
             <p className="text-xs font-semibold uppercase text-slate-500">Notes</p>
             <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-700">
               {lead.notes}
@@ -90,9 +91,9 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
         </div>
       </section>
 
-      <section className="rounded-lg border border-border bg-white p-6 shadow-soft">
-        <h2 className="text-base font-semibold text-slate-950">Lead status</h2>
-        <p className="mt-2 text-sm text-slate-600">
+      <section className="app-card p-6">
+        <h2 className="section-title">Lead status</h2>
+        <p className="mt-2 muted-copy">
           Choose the current stage for this lead.
         </p>
         <div className="mt-5">
@@ -100,63 +101,63 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
         </div>
       </section>
 
-      <section className="rounded-lg border border-border bg-white shadow-soft">
-        <div className="border-b border-border px-6 py-4">
-          <h2 className="text-base font-semibold text-slate-950">AI extraction</h2>
+      <section className="app-card overflow-hidden">
+        <div className="app-card-header">
+          <h2 className="section-title">AI extraction</h2>
         </div>
         {lead.ai_extracted_at ? (
           <div className="grid gap-4 p-6 md:grid-cols-2">
-            <div>
+            <div className="rounded-xl bg-cyan-50/45 p-4">
               <p className="text-xs font-semibold uppercase text-slate-500">
                 Service requested
               </p>
-              <p className="mt-1 text-sm text-slate-900">
+              <p className="mt-1 text-sm text-foreground">
                 {formatLabel(lead.service_requested)}
               </p>
             </div>
-            <div>
+            <div className="rounded-xl bg-cyan-50/45 p-4">
               <p className="text-xs font-semibold uppercase text-slate-500">
                 Urgency
               </p>
-              <p className="mt-1 text-sm text-slate-900">
+              <p className="mt-1 text-sm text-foreground">
                 {formatLabel(lead.urgency)}
               </p>
             </div>
-            <div>
+            <div className="rounded-xl bg-cyan-50/45 p-4">
               <p className="text-xs font-semibold uppercase text-slate-500">
                 Intent
               </p>
-              <p className="mt-1 text-sm text-slate-900">
+              <p className="mt-1 text-sm text-foreground">
                 {formatLabel(lead.intent)}
               </p>
             </div>
-            <div>
+            <div className="rounded-xl bg-cyan-50/45 p-4">
               <p className="text-xs font-semibold uppercase text-slate-500">
                 Lead quality
               </p>
-              <p className="mt-1 text-sm text-slate-900">
+              <p className="mt-1 text-sm text-foreground">
                 {formatLabel(lead.lead_quality)}
               </p>
             </div>
-            <div>
+            <div className="rounded-xl bg-cyan-50/45 p-4">
               <p className="text-xs font-semibold uppercase text-slate-500">
                 Confidence
               </p>
-              <p className="mt-1 text-sm text-slate-900">
+              <p className="mt-1 text-sm text-foreground">
                 {lead.confidence === null
                   ? "Unknown"
                   : `${Math.round(lead.confidence * 100)}%`}
               </p>
             </div>
-            <div>
+            <div className="rounded-xl border border-teal-100 bg-teal-50/70 p-4">
               <p className="text-xs font-semibold uppercase text-slate-500">
                 Recommended next action
               </p>
-              <p className="mt-1 text-sm text-slate-900">
+              <p className="mt-1 text-sm leading-6 text-foreground">
                 {lead.recommended_next_action ?? "Unknown"}
               </p>
             </div>
-            <div className="md:col-span-2">
+            <div className="rounded-xl border border-border bg-white p-4 md:col-span-2">
               <p className="text-xs font-semibold uppercase text-slate-500">
                 Summary
               </p>
@@ -167,7 +168,7 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
           </div>
         ) : (
           <div className="p-6">
-            <p className="text-sm text-slate-600">
+            <p className="muted-copy">
               {lead.ai_extraction_error
                 ? `AI extraction needs review: ${lead.ai_extraction_error}`
                 : "No AI extraction has been stored for this lead yet."}
@@ -176,9 +177,9 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
         )}
       </section>
 
-      <section className="rounded-lg border border-border bg-white shadow-soft">
-        <div className="border-b border-border px-6 py-4">
-          <h2 className="text-base font-semibold text-slate-950">Messages</h2>
+      <section className="app-card overflow-hidden">
+        <div className="app-card-header">
+          <h2 className="section-title">Messages</h2>
         </div>
         <div className="divide-y divide-border">
           {messages.map((message) => (
@@ -194,7 +195,7 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
             </div>
           ))}
           {messages.length === 0 ? (
-            <p className="px-6 py-5 text-sm text-slate-600">
+            <p className="px-6 py-5 muted-copy">
               No messages yet. Email, SMS, and follow-ups are intentionally out
               of scope for Phase 1.
             </p>

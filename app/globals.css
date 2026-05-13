@@ -12,8 +12,8 @@
 
 body {
   margin: 0;
-  background: #f7f8fb;
-  color: #17202e;
+  background: #f4fbfd;
+  color: #0f2133;
 }
 
 a {
@@ -22,6 +22,42 @@ a {
 }
 
 button,
-input {
+input,
+select,
+textarea {
   font: inherit;
+}
+
+@layer components {
+  .page-kicker {
+    @apply text-sm font-medium text-muted;
+  }
+
+  .page-title {
+    @apply mt-1 text-3xl font-semibold text-foreground;
+  }
+
+  .app-card {
+    @apply rounded-2xl border border-border bg-white shadow-card;
+  }
+
+  .app-card-header {
+    @apply border-b border-border px-5 py-4 md:px-6;
+  }
+
+  .app-label {
+    @apply text-sm font-medium text-slate-700;
+  }
+
+  .app-input {
+    @apply mt-2 w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm text-foreground outline-none ring-accent/10 transition placeholder:text-slate-400 focus:border-accent/50 focus:ring-4;
+  }
+
+  .section-title {
+    @apply text-base font-semibold text-foreground;
+  }
+
+  .muted-copy {
+    @apply text-sm leading-6 text-muted;
+  }
 }

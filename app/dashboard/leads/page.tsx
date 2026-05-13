@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { EmptyBusiness } from "@/components/dashboard/empty-business";
+import { SourceBadge } from "@/components/leads/source-badge";
 import { StatusBadge } from "@/components/leads/status-badge";
 import { leadStatuses } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
@@ -42,15 +43,19 @@ export default async function LeadsPage({ searchParams }: LeadsPageProps) {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       <section>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-sm font-medium text-muted">{business.name}</p>
-            <h1 className="mt-1 text-3xl font-semibold text-slate-950">Leads</h1>
+            <p className="page-kicker">{business.name}</p>
+            <h1 className="page-title">Leads</h1>
+            <p className="mt-3 max-w-2xl muted-copy">
+              Search, filter, and open each enquiry without a heavy CRM
+              workflow.
+            </p>
           </div>
           <Link
-            className="inline-flex min-h-10 items-center justify-center rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
+            className="inline-flex min-h-10 items-center justify-center rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-accent-dark"
             href="/dashboard/leads/new"
           >
             New Lead
@@ -58,14 +63,14 @@ export default async function LeadsPage({ searchParams }: LeadsPageProps) {
         </div>
       </section>
 
-      <form className="rounded-lg border border-border bg-white p-5 shadow-soft">
+      <form className="app-card p-5">
         <div className="grid gap-4 md:grid-cols-[1fr_180px_180px_auto_auto] md:items-end">
           <div>
-            <label className="text-sm font-medium text-slate-700" htmlFor="q">
+            <label className="app-label" htmlFor="q">
               Search
             </label>
             <input
-              className="mt-2 w-full rounded-md border border-border bg-white px-3 py-2.5 text-sm outline-none ring-slate-900/10 focus:ring-4"
+              className="app-input"
               defaultValue={query}
               id="q"
               name="q"
@@ -76,13 +81,13 @@ export default async function LeadsPage({ searchParams }: LeadsPageProps) {
 
           <div>
             <label
-              className="text-sm font-medium text-slate-700"
+              className="app-label"
               htmlFor="status"
             >
               Status
             </label>
             <select
-              className="mt-2 w-full rounded-md border border-border bg-white px-3 py-2.5 text-sm outline-none ring-slate-900/10 focus:ring-4"
+              className="app-input"
               defaultValue={statusFilter}
               id="status"
               name="status"
@@ -98,13 +103,13 @@ export default async function LeadsPage({ searchParams }: LeadsPageProps) {
 
           <div>
             <label
-              className="text-sm font-medium text-slate-700"
+              className="app-label"
               htmlFor="source"
             >
               Source
             </label>
             <select
-              className="mt-2 w-full rounded-md border border-border bg-white px-3 py-2.5 text-sm outline-none ring-slate-900/10 focus:ring-4"
+              className="app-input"
               defaultValue={sourceFilter}
               id="source"
               name="source"
@@ -119,13 +124,13 @@ export default async function LeadsPage({ searchParams }: LeadsPageProps) {
           </div>
 
           <button
-            className="inline-flex min-h-10 items-center justify-center rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
+            className="inline-flex min-h-10 items-center justify-center rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition hover:bg-accent-dark"
             type="submit"
           >
             Apply
           </button>
           <Link
-            className="inline-flex min-h-10 items-center justify-center rounded-md border border-border bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+            className="inline-flex min-h-10 items-center justify-center rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-cyan-50"
             href="/dashboard/leads"
           >
             Clear
@@ -133,9 +138,10 @@ export default async function LeadsPage({ searchParams }: LeadsPageProps) {
         </div>
       </form>
 
-      <section className="overflow-hidden rounded-lg border border-border bg-white shadow-soft">
-        <table className="w-full border-collapse text-left text-sm">
-          <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+      <section className="app-card overflow-hidden">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[760px] border-collapse text-left text-sm">
+          <thead className="bg-cyan-50/70 text-xs uppercase text-muted">
             <tr>
               <th className="px-5 py-3 font-semibold">Lead</th>
               <th className="px-5 py-3 font-semibold">Contact</th>
@@ -144,35 +150,36 @@ export default async function LeadsPage({ searchParams }: LeadsPageProps) {
               <th className="px-5 py-3 font-semibold">Created</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody className="divide-y divide-border bg-white">
             {filteredLeads.map((lead) => (
-              <tr className="hover:bg-slate-50" key={lead.id}>
+              <tr className="transition hover:bg-cyan-50/50" key={lead.id}>
                 <td className="px-5 py-4">
                   <Link
-                    className="font-medium text-slate-950 underline-offset-4 hover:underline"
+                    className="font-medium text-foreground underline-offset-4 hover:text-accent hover:underline"
                     href={`/dashboard/leads/${lead.id}`}
                   >
                     {lead.full_name}
                   </Link>
                 </td>
-                <td className="px-5 py-4 text-slate-600">
+                <td className="px-5 py-4 text-muted">
                   {lead.email ?? lead.phone ?? "No contact details"}
                 </td>
-                <td className="px-5 py-4 text-slate-600">
-                  {lead.source ?? "Unknown"}
+                <td className="px-5 py-4">
+                  <SourceBadge source={lead.source} />
                 </td>
                 <td className="px-5 py-4">
                   <StatusBadge status={lead.status} />
                 </td>
-                <td className="px-5 py-4 text-slate-600">
+                <td className="px-5 py-4 text-muted">
                   {formatDate(lead.created_at)}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+        </div>
         {filteredLeads.length === 0 ? (
-          <p className="border-t border-border px-5 py-6 text-sm text-slate-600">
+          <p className="border-t border-border px-5 py-6 muted-copy">
             No leads match these filters.
           </p>
         ) : null}
