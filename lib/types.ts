@@ -57,3 +57,36 @@ export type Message = {
   body: string;
   created_at: string;
 };
+
+export type InboundEmailClassification =
+  | "enquiry"
+  | "non_enquiry"
+  | "verification"
+  | "unsure";
+
+export type InboundEmailProcessingStatus =
+  | "received"
+  | "skipped"
+  | "lead_created"
+  | "needs_review"
+  | "failed";
+
+export type InboundEmailLog = {
+  id: string;
+  business_id: string | null;
+  inbound_alias: string | null;
+  resend_email_id: string | null;
+  from_email: string | null;
+  from_name: string | null;
+  to_email: string | null;
+  subject: string | null;
+  text_body: string | null;
+  html_body: string | null;
+  body_preview: string | null;
+  classification: InboundEmailClassification;
+  classification_reason: string | null;
+  lead_id: string | null;
+  processing_status: InboundEmailProcessingStatus;
+  error_message: string | null;
+  created_at: string;
+};

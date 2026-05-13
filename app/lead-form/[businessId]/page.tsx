@@ -1,4 +1,5 @@
 import { submitPublicLead } from "@/app/lead-form/[businessId]/actions";
+import { Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import type { Business } from "@/lib/types";
 
@@ -46,7 +47,7 @@ export default async function PublicLeadFormPage({
       <main className="flex min-h-screen items-center justify-center bg-background px-6">
         <section className="app-card w-full max-w-lg p-8 text-center">
           <div className="mx-auto mb-5 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-accent text-sm font-semibold text-white">
-            L
+            <Sparkles className="h-5 w-5" strokeWidth={2.4} />
           </div>
           <p className="page-kicker">{currentBusiness.name}</p>
           <h1 className="mt-2 text-2xl font-semibold text-foreground">
@@ -62,7 +63,7 @@ export default async function PublicLeadFormPage({
       <section className="mx-auto w-full max-w-2xl">
         <div className="mb-6 text-center">
           <div className="mx-auto mb-5 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-accent text-sm font-semibold text-white shadow-sm">
-            L
+            <Sparkles className="h-5 w-5" strokeWidth={2.4} />
           </div>
           <p className="page-kicker">{currentBusiness.name}</p>
           <h1 className="mt-2 text-3xl font-semibold text-foreground">

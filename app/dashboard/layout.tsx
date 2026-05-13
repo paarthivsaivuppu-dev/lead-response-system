@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { BarChart3, LayoutDashboard, Settings } from "lucide-react";
+import { BarChart3, Inbox, LayoutDashboard, Settings, Sparkles } from "lucide-react";
 import { DashboardStatusNotices } from "@/components/dashboard/status-notices";
 import { getBusinessSettings, getCurrentBusiness } from "@/lib/data";
 import { getSmsSafetyConfig } from "@/lib/sms/config";
@@ -11,6 +11,7 @@ export const dynamic = "force-dynamic";
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/leads", label: "Leads", icon: BarChart3 },
+  { href: "/dashboard/inbound-emails", label: "Inbound Emails", icon: Inbox },
   { href: "/dashboard/settings", label: "Settings", icon: Settings }
 ];
 
@@ -49,7 +50,7 @@ export default async function DashboardLayout({
             href="/dashboard"
           >
             <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-accent text-sm font-semibold text-white shadow-sm">
-              L
+              <Sparkles className="h-4 w-4" strokeWidth={2.4} />
             </span>
             LeadResponse AI
           </Link>

@@ -1,5 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
-import type { Business, BusinessSettings, Lead, Message } from "@/lib/types";
+import type {
+  Business,
+  BusinessSettings,
+  InboundEmailLog,
+  Lead,
+  Message
+} from "@/lib/types";
 
 type BusinessUserJoin = {
   businesses: Business | Business[] | null;
@@ -102,5 +108,61 @@ export async function getLeadDetail(leadId: string) {
     business,
     lead: lead as Lead | null,
     messages: (messages ?? []) as Message[]
+  };
+}
+
+export async function getInboundEmailLogsForCurrentBusiness() {
+  const business = await getCurrentBusiness();
+
+  if (!business) {
+    return { business: null, logs: [] as InboundEmailLog[] };
+  }
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("inbound_email_logs")
+    .select("*")
+    .eq("business_id", business.id)
+    .order("created_at", { ascending: false })
+    .limit(50);
+
+  return {
+    business,
+    logs: (data ?? []) as InboundEmailLog[]
+  };
+}
+
+export async function getInboundEmailLogDetail(logId: string) {
+  const business = await getCurrentBusiness();
+
+  if (!business) {
+    return { business: null, log: null, lead: null };
+  }
+
+  const supabase = await createClient();
+  const { data: log } = await supabase
+    .from("inbound_email_logs")
+    .select("*")
+    .eq("business_id", business.id)
+    .eq("id", logId)
+    .single();
+
+  const inboundLog = log as InboundEmailLog | null;
+
+  if (!inboundLog?.lead_id) {
+    return { business, log: inboundLog, lead: null };
+  }
+
+  const { data: lead } = await supabase
+    .from("leads")
+    .select("*")
+    .eq("business_id", business.id)
+    .eq("id", inboundLog.lead_id)
+    .single();
+
+  return {
+    business,
+    log: inboundLog,
+    lead: lead as Lead | null
   };
 }

@@ -84,6 +84,28 @@ create table if not exists public.business_rules (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.inbound_email_logs (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid references public.businesses(id) on delete set null,
+  inbound_alias text,
+  resend_email_id text,
+  from_email text,
+  from_name text,
+  to_email text,
+  subject text,
+  text_body text,
+  html_body text,
+  body_preview text,
+  classification text not null default 'unsure'
+    check (classification in ('enquiry', 'non_enquiry', 'verification', 'unsure')),
+  classification_reason text,
+  lead_id uuid references public.leads(id) on delete set null,
+  processing_status text not null default 'received'
+    check (processing_status in ('received', 'skipped', 'lead_created', 'needs_review', 'failed')),
+  error_message text,
+  created_at timestamptz not null default now()
+);
+
 create index if not exists business_users_user_id_idx on public.business_users(user_id);
 create index if not exists business_users_business_id_idx on public.business_users(business_id);
 create index if not exists leads_business_id_idx on public.leads(business_id);
@@ -91,6 +113,10 @@ create index if not exists leads_status_idx on public.leads(status);
 create index if not exists messages_lead_id_idx on public.messages(lead_id);
 create index if not exists follow_ups_lead_id_idx on public.follow_ups(lead_id);
 create index if not exists business_rules_business_id_idx on public.business_rules(business_id);
+create index if not exists inbound_email_logs_business_id_created_at_idx
+  on public.inbound_email_logs(business_id, created_at desc);
+create index if not exists inbound_email_logs_resend_email_id_idx
+  on public.inbound_email_logs(resend_email_id);
 
 alter table public.businesses enable row level security;
 alter table public.business_users enable row level security;
@@ -98,6 +124,10 @@ alter table public.leads enable row level security;
 alter table public.messages enable row level security;
 alter table public.follow_ups enable row level security;
 alter table public.business_rules enable row level security;
+alter table public.inbound_email_logs enable row level security;
+
+grant select on table public.inbound_email_logs to authenticated;
+grant all privileges on table public.inbound_email_logs to service_role;
 
 -- Phase 1 RLS is intentionally simple:
 -- Users can read and manage records for businesses they are connected to.
@@ -241,6 +271,18 @@ create policy "Users can read business rules"
       select 1
       from public.business_users
       where business_users.business_id = business_rules.business_id
+        and business_users.user_id = auth.uid()
+    )
+  );
+
+create policy "Users can read business inbound email logs"
+  on public.inbound_email_logs for select
+  using (
+    business_id is not null
+    and exists (
+      select 1
+      from public.business_users
+      where business_users.business_id = inbound_email_logs.business_id
         and business_users.user_id = auth.uid()
     )
   );

@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { Resend } from "resend";
+import { classifyInboundEmail } from "@/lib/email/classify-inbound-email";
 import { createLeadForBusiness } from "@/lib/leads/create-lead";
 import { normalizeAustralianMobilePhone } from "@/lib/phone/normalize";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -52,6 +53,14 @@ function getInboundAlias(addresses: string[] | undefined) {
   const localPart = email?.split("@")[0]?.trim().toLowerCase();
 
   return localPart || null;
+}
+
+function getPrimaryToEmail(addresses: string[] | undefined) {
+  return parseEmailAddress(addresses?.[0]).email ?? addresses?.[0] ?? null;
+}
+
+function createBodyPreview(value: string) {
+  return value.replace(/\s+/g, " ").trim().slice(0, 240);
 }
 
 function extractAustralianMobilePhone(value: string) {
@@ -182,22 +191,96 @@ export async function POST(request: NextRequest) {
       html?: string;
     };
     const alias = getInboundAlias(event.data?.to ?? email.to);
-
-    if (!alias) {
-      console.error("Resend inbound email skipped: no inbound alias found.");
-      return NextResponse.json({ ok: true, skipped: true });
-    }
-
     console.log("Inbound email webhook: using Supabase admin client");
     const supabase = createAdminClient();
+    const sender = parseEmailAddress(email.from ?? event.data?.from);
+    const subject = (email.subject ?? event.data?.subject ?? "").trim();
+    const textBody = email.text?.trim() ?? "";
+    const htmlBody = email.html ?? "";
+    const htmlBodyText = htmlBody ? stripHtml(htmlBody) : "";
+    const body = textBody || htmlBodyText;
+    const toEmail = getPrimaryToEmail(event.data?.to ?? email.to);
+
     const { data: business } = await supabase
       .from("businesses")
       .select("*")
-      .eq("inbound_email_alias", alias)
+      .eq("inbound_email_alias", alias ?? "")
+      .maybeSingle();
+
+    const { data: log, error: logError } = await supabase
+      .from("inbound_email_logs")
+      .insert({
+        business_id: business?.id ?? null,
+        inbound_alias: alias,
+        resend_email_id: emailId,
+        from_email: sender.email,
+        from_name: sender.name,
+        to_email: toEmail,
+        subject: subject || null,
+        text_body: textBody || null,
+        html_body: htmlBody || null,
+        body_preview: createBodyPreview(body),
+        classification: "unsure",
+        processing_status: "received"
+      })
+      .select("id")
       .single();
+
+    if (logError || !log) {
+      throw new Error(logError?.message ?? "Could not store inbound email log.");
+    }
+
+    const updateLog = async (
+      values: Record<string, string | null | undefined>
+    ) => {
+      const { error } = await supabase
+        .from("inbound_email_logs")
+        .update(values)
+        .eq("id", log.id);
+
+      if (error) {
+        console.error("Inbound email log update failed:", error);
+      }
+    };
+
+    const classification = classifyInboundEmail({
+      fromEmail: sender.email,
+      fromName: sender.name,
+      subject,
+      textBody,
+      htmlBodyText
+    });
+
+    await updateLog({
+      classification: classification.classification,
+      classification_reason: classification.reason
+    });
+
+    if (!alias) {
+      console.error("Resend inbound email skipped: no inbound alias found.");
+      await updateLog({
+        processing_status: "skipped",
+        error_message: "No inbound alias found."
+      });
+      return NextResponse.json({ ok: true, skipped: true });
+    }
 
     if (!business) {
       console.error(`Resend inbound email skipped: no business for alias ${alias}.`);
+      await updateLog({
+        processing_status: "skipped",
+        error_message: `No business found for inbound alias ${alias}.`
+      });
+      return NextResponse.json({ ok: true, skipped: true });
+    }
+
+    if (
+      classification.classification === "verification" ||
+      classification.classification === "non_enquiry"
+    ) {
+      await updateLog({
+        processing_status: "skipped"
+      });
       return NextResponse.json({ ok: true, skipped: true });
     }
 
@@ -213,9 +296,6 @@ export async function POST(request: NextRequest) {
       ])
     );
 
-    const sender = parseEmailAddress(email.from ?? event.data?.from);
-    const subject = (email.subject ?? event.data?.subject ?? "").trim();
-    const body = email.text?.trim() || (email.html ? stripHtml(email.html) : "");
     const customerName =
       extractNameFromEmailBody(body) || sender.name || sender.email || "Email enquiry";
     const originalMessage = [
@@ -225,18 +305,40 @@ export async function POST(request: NextRequest) {
       .filter(Boolean)
       .join("\n\n");
 
-    await createLeadForBusiness({
-      supabase,
-      business: business as Business,
-      customerName,
-      customerPhone: extractAustralianMobilePhone(body),
-      customerEmail: sender.email ?? "",
-      source: "email",
-      originalMessage: originalMessage || "No email content provided.",
-      emailNotificationsEnabled:
-        rules.get("email_notifications_enabled")?.enabled === true,
-      smsAlertsEnabled: rules.get("sms_alerts_enabled")?.enabled === true
-    });
+    try {
+      const { leadId } = await createLeadForBusiness({
+        supabase,
+        business: business as Business,
+        customerName,
+        customerPhone: extractAustralianMobilePhone(body),
+        customerEmail: sender.email ?? "",
+        source: "email",
+        originalMessage: originalMessage || "No email content provided.",
+        emailNotificationsEnabled:
+          rules.get("email_notifications_enabled")?.enabled === true,
+        initialStatus:
+          classification.classification === "unsure" ? "Needs Review" : "New",
+        smsAlertsEnabled: rules.get("sms_alerts_enabled")?.enabled === true
+      });
+
+      await updateLog({
+        lead_id: leadId,
+        processing_status:
+          classification.classification === "unsure"
+            ? "needs_review"
+            : "lead_created"
+      });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Inbound email lead creation failed.";
+
+      await updateLog({
+        processing_status: "failed",
+        error_message: message
+      });
+
+      throw error;
+    }
 
     return NextResponse.json({ ok: true });
   } catch (error) {

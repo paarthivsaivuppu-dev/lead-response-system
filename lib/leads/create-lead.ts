@@ -3,7 +3,7 @@ import { sendLeadNotificationEmail } from "@/lib/email/lead-notification";
 import { normalizeAustralianMobilePhone } from "@/lib/phone/normalize";
 import { sendCustomerAutoReply } from "@/lib/sms/customer-auto-reply";
 import { sendLeadSmsNotification } from "@/lib/sms/lead-notification";
-import type { Business } from "@/lib/types";
+import type { Business, LeadStatus } from "@/lib/types";
 
 type SupabaseClient = {
   from: (table: string) => any;
@@ -18,6 +18,7 @@ type CreateLeadForBusinessInput = {
   source: "manual" | "email" | "sms" | "website";
   originalMessage: string;
   emailNotificationsEnabled?: boolean;
+  initialStatus?: LeadStatus;
   smsAlertsEnabled?: boolean;
 };
 
@@ -30,6 +31,7 @@ export async function createLeadForBusiness({
   source,
   originalMessage,
   emailNotificationsEnabled = false,
+  initialStatus = "New",
   smsAlertsEnabled = false
 }: CreateLeadForBusinessInput) {
   const normalizedPhone = customerPhone
@@ -49,7 +51,7 @@ export async function createLeadForBusiness({
       phone: storedPhone,
       email: customerEmail || null,
       source,
-      status: invalidPhoneNote ? "Needs Review" : "New",
+      status: invalidPhoneNote ? "Needs Review" : initialStatus,
       notes: originalMessage || null
     })
     .select("id")
