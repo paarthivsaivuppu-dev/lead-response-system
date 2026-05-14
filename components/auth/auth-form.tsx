@@ -18,8 +18,31 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [loading, setLoading] = useState(false);
   const isLogin = mode === "login";
 
+  function getFriendlyError(message: string) {
+    const normalizedMessage = message.toLowerCase();
+
+    if (
+      isLogin &&
+      (normalizedMessage.includes("invalid login credentials") ||
+        normalizedMessage.includes("invalid credentials") ||
+        normalizedMessage.includes("email") ||
+        normalizedMessage.includes("password"))
+    ) {
+      return "Incorrect email or password. Please try again.";
+    }
+
+    return isLogin
+      ? "Something went wrong while signing in. Please try again."
+      : "Something went wrong while creating your account. Please try again.";
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (loading) {
+      return;
+    }
+
     setError(null);
     setLoading(true);
 
@@ -31,7 +54,7 @@ export function AuthForm({ mode }: AuthFormProps) {
     setLoading(false);
 
     if (result.error) {
-      setError(result.error.message);
+      setError(getFriendlyError(result.error.message));
       return;
     }
 
@@ -71,12 +94,18 @@ export function AuthForm({ mode }: AuthFormProps) {
         />
       </div>
       {error ? (
-        <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm leading-6 text-rose-700">
           {error}
         </p>
       ) : null}
       <Button className="w-full" disabled={loading} type="submit">
-        {loading ? "Please wait..." : isLogin ? "Log in" : "Create account"}
+        {loading
+          ? isLogin
+            ? "Signing in..."
+            : "Creating account..."
+          : isLogin
+            ? "Log in"
+            : "Create account"}
       </Button>
       <p className="text-center text-sm text-slate-600">
         {isLogin ? "Need an account?" : "Already have an account?"}{" "}

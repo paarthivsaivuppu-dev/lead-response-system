@@ -1,5 +1,6 @@
 import { EmptyBusiness } from "@/components/dashboard/empty-business";
-import { Button } from "@/components/ui/button";
+import { LogoutButton } from "@/components/auth/logout-button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { updateBusinessSettings } from "@/app/dashboard/settings/actions";
 import { getBusinessSettings, getCurrentBusiness } from "@/lib/data";
 
@@ -26,10 +27,6 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
       <section>
         <p className="page-kicker">{business.name}</p>
         <h1 className="page-title">Settings</h1>
-        <p className="mt-3 max-w-2xl muted-copy">
-          Control business details, team notifications, and safe communication
-          settings from one place.
-        </p>
       </section>
 
       {saved === "1" ? (
@@ -182,9 +179,24 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
         </section>
 
         <div className="app-card flex justify-end px-6 py-4">
-          <Button type="submit">Save settings</Button>
+          <SubmitButton pendingText="Saving...">Save settings</SubmitButton>
         </div>
       </form>
+
+      <section className="app-card overflow-hidden">
+        <div className="app-card-header">
+          <h2 className="section-title">Account</h2>
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-4 p-6">
+          <div>
+            <p className="text-sm font-medium text-foreground">Sign out</p>
+            <p className="mt-1 muted-copy">
+              Log out of this ClinicResponse AI account on this device.
+            </p>
+          </div>
+          <LogoutButton />
+        </div>
+      </section>
     </div>
   );
 }

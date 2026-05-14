@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { EmptyBusiness } from "@/components/dashboard/empty-business";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { createLead } from "@/app/dashboard/leads/actions";
 import { getCurrentBusiness } from "@/lib/data";
 
@@ -25,10 +25,6 @@ export default async function NewLeadPage() {
       <section>
         <p className="page-kicker">{business.name}</p>
         <h1 className="page-title">New Lead</h1>
-        <p className="mt-3 max-w-2xl muted-copy">
-          Add a manual enquiry and let the system capture the structured lead
-          details.
-        </p>
       </section>
 
       <form
@@ -128,7 +124,7 @@ export default async function NewLeadPage() {
           >
             Cancel
           </Link>
-          <Button type="submit">Create lead</Button>
+          <SubmitButton pendingText="Creating lead...">Create lead</SubmitButton>
         </div>
       </form>
     </div>

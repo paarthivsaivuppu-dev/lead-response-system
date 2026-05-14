@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { leadStatuses, type LeadStatus } from "@/lib/types";
 import { updateLeadStatus } from "@/app/dashboard/leads/actions";
 
@@ -18,13 +18,13 @@ export function StatusButtons({ leadId, currentStatus }: StatusButtonsProps) {
           }}
           key={status}
         >
-          <Button
+          <SubmitButton
             className="min-h-9 px-3"
-            type="submit"
+            pendingText="Updating..."
             variant={status === currentStatus ? "primary" : "outline"}
           >
             {status}
-          </Button>
+          </SubmitButton>
         </form>
       ))}
     </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { deleteLead } from "@/app/dashboard/leads/actions";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 type DeleteLeadButtonProps = {
   leadId: string;
@@ -24,13 +24,13 @@ export function DeleteLeadButton({ leadId, leadName }: DeleteLeadButtonProps) {
         }
       }}
     >
-      <Button
+      <SubmitButton
         className="border-rose-200 text-rose-700 hover:bg-rose-50"
-        type="submit"
+        pendingText="Deleting..."
         variant="outline"
       >
         Delete Lead
-      </Button>
+      </SubmitButton>
     </form>
   );
 }
