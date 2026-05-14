@@ -120,18 +120,6 @@ export default async function InboundEmailLogDetailPage({
         </div>
       </section>
 
-      {log.html_body ? (
-        <section className="app-card overflow-hidden">
-          <div className="app-card-header">
-            <h2 className="section-title">HTML body text</h2>
-          </div>
-          <div className="p-6">
-            <pre className="max-h-80 whitespace-pre-wrap rounded-xl border border-border bg-slate-50 p-4 text-xs leading-5 text-slate-600">
-              {log.html_body}
-            </pre>
-          </div>
-        </section>
-      ) : null}
     </div>
   );
 }

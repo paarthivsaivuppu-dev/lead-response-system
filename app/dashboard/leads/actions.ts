@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { isBusinessAccessible } from "@/lib/business/access";
 import { createLeadForBusiness } from "@/lib/leads/create-lead";
 import { createClient } from "@/lib/supabase/server";
 import { getBusinessSettings, getCurrentBusiness } from "@/lib/data";
@@ -79,6 +80,73 @@ export async function deleteLead(leadId: string) {
   redirect("/dashboard/leads");
 }
 
+export async function deleteSelectedLeads(formData: FormData) {
+  const leadIds = formData
+    .getAll("lead_ids")
+    .map((value) => String(value))
+    .filter(Boolean);
+
+  if (leadIds.length === 0) {
+    return;
+  }
+
+  const business = await getCurrentBusiness();
+
+  if (!business) {
+    throw new Error("No business is connected to this user.");
+  }
+
+  const supabase = await createClient();
+  const { data: ownedLeads, error: ownedLeadsError } = await supabase
+    .from("leads")
+    .select("id")
+    .eq("business_id", business.id)
+    .in("id", leadIds);
+
+  if (ownedLeadsError) {
+    throw new Error(ownedLeadsError.message);
+  }
+
+  const ownedLeadIds = (ownedLeads ?? []).map((lead) => lead.id as string);
+
+  if (ownedLeadIds.length === 0) {
+    return;
+  }
+
+  const { error: messagesError } = await supabase
+    .from("messages")
+    .delete()
+    .eq("business_id", business.id)
+    .in("lead_id", ownedLeadIds);
+
+  if (messagesError) {
+    throw new Error(messagesError.message);
+  }
+
+  const { error: followUpsError } = await supabase
+    .from("follow_ups")
+    .delete()
+    .eq("business_id", business.id)
+    .in("lead_id", ownedLeadIds);
+
+  if (followUpsError) {
+    throw new Error(followUpsError.message);
+  }
+
+  const { error: leadsError } = await supabase
+    .from("leads")
+    .delete()
+    .eq("business_id", business.id)
+    .in("id", ownedLeadIds);
+
+  if (leadsError) {
+    throw new Error(leadsError.message);
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/leads");
+}
+
 export async function createLead(formData: FormData) {
   const customerName = String(formData.get("customer_name") ?? "").trim();
   const customerPhone = String(formData.get("customer_phone") ?? "").trim();
@@ -98,6 +166,12 @@ export async function createLead(formData: FormData) {
 
   if (!business) {
     throw new Error("No business is connected to this user.");
+  }
+
+  if (!isBusinessAccessible(business)) {
+    throw new Error(
+      "Your ClinicResponse AI pilot is currently paused or expired."
+    );
   }
 
   const supabase = await createClient();

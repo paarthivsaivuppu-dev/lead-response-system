@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DeleteLeadButton } from "@/components/leads/delete-lead-button";
+import {
+  BookingReadinessBadge,
+  formatBookingReadiness
+} from "@/components/leads/booking-readiness-badge";
 import { SourceBadge } from "@/components/leads/source-badge";
 import { StatusBadge } from "@/components/leads/status-badge";
 import { StatusButtons } from "@/components/leads/status-buttons";
@@ -19,6 +23,10 @@ function formatLabel(value: string | null) {
     .split(/[\s_-]+/)
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
+}
+
+function formatLeadName(value: string) {
+  return value.includes("@") ? "Unknown" : value;
 }
 
 type LeadDetailPageProps = {
@@ -51,7 +59,7 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
           <div>
             <p className="page-kicker">{business.name}</p>
             <h1 className="page-title">
-              {lead.full_name}
+              {formatLeadName(lead.full_name)}
             </h1>
             <p className="mt-2 text-sm text-muted">
               Created {formatDate(lead.created_at)}
@@ -107,6 +115,20 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
         </div>
         {lead.ai_extracted_at ? (
           <div className="grid gap-4 p-6 md:grid-cols-2">
+            <div className="rounded-xl border border-teal-100 bg-teal-50/70 p-4 md:col-span-2">
+              <p className="text-xs font-semibold uppercase text-slate-500">
+                Booking readiness
+              </p>
+              <div className="mt-2">
+                <BookingReadinessBadge readiness={lead.booking_readiness} />
+              </div>
+              <p className="mt-3 text-sm leading-6 text-foreground">
+                {lead.booking_readiness_reason ??
+                  `${formatBookingReadiness(
+                    lead.booking_readiness
+                  )} has not been explained yet.`}
+              </p>
+            </div>
             <div className="rounded-xl bg-cyan-50/45 p-4">
               <p className="text-xs font-semibold uppercase text-slate-500">
                 Service requested

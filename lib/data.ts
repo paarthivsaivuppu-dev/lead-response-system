@@ -125,10 +125,41 @@ export async function getInboundEmailLogsForCurrentBusiness() {
     .eq("business_id", business.id)
     .order("created_at", { ascending: false })
     .limit(50);
+  const logs = (data ?? []) as InboundEmailLog[];
+  const emailsMissingLeadIds = Array.from(
+    new Set(
+      logs
+        .filter((log) => log.processing_status === "lead_created" && !log.lead_id)
+        .map((log) => log.from_email)
+        .filter((email): email is string => Boolean(email))
+    )
+  );
+
+  if (emailsMissingLeadIds.length === 0) {
+    return {
+      business,
+      logs
+    };
+  }
+
+  const { data: matchingLeads } = await supabase
+    .from("leads")
+    .select("id,email")
+    .eq("business_id", business.id)
+    .eq("source", "email")
+    .in("email", emailsMissingLeadIds)
+    .order("created_at", { ascending: false });
+
+  const leadIdByEmail = new Map(
+    (matchingLeads ?? []).map((lead) => [lead.email as string, lead.id as string])
+  );
 
   return {
     business,
-    logs: (data ?? []) as InboundEmailLog[]
+    logs: logs.map((log) => ({
+      ...log,
+      lead_id: log.lead_id ?? leadIdByEmail.get(log.from_email ?? "") ?? null
+    }))
   };
 }
 

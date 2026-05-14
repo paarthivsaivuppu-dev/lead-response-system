@@ -1,6 +1,6 @@
 import { EmptyBusiness } from "@/components/dashboard/empty-business";
 import { LogoutButton } from "@/components/auth/logout-button";
-import { SubmitButton } from "@/components/ui/submit-button";
+import { SettingsSaveNotice } from "@/components/settings/settings-save-notice";
 import { updateBusinessSettings } from "@/app/dashboard/settings/actions";
 import { getBusinessSettings, getCurrentBusiness } from "@/lib/data";
 
@@ -59,17 +59,17 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
             </div>
 
             <div>
-              <label className="app-label" htmlFor="reply_tone">
+              <p className="app-label">
                 Reply tone
-              </label>
+              </p>
               <input
-                className="app-input"
-                defaultValue={business.reply_tone ?? "Friendly and professional"}
-                id="reply_tone"
                 name="reply_tone"
-                placeholder="Friendly and professional"
-                type="text"
+                type="hidden"
+                value={business.reply_tone ?? "Friendly and professional"}
               />
+              <div className="mt-2 rounded-lg border border-border bg-slate-50 px-3 py-2.5 text-sm text-muted">
+                {business.reply_tone ?? "Friendly and professional"}
+              </div>
             </div>
           </div>
         </section>
@@ -178,9 +178,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
           </div>
         </section>
 
-        <div className="app-card flex justify-end px-6 py-4">
-          <SubmitButton pendingText="Saving...">Save settings</SubmitButton>
-        </div>
+        <SettingsSaveNotice />
       </form>
 
       <section className="app-card overflow-hidden">

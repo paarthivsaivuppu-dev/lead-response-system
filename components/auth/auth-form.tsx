@@ -107,6 +107,16 @@ export function AuthForm({ mode }: AuthFormProps) {
             ? "Log in"
             : "Create account"}
       </Button>
+      {isLogin ? (
+        <p className="text-center text-sm">
+          <Link
+            className="font-medium text-accent underline-offset-4 hover:underline"
+            href="/auth/forgot-password"
+          >
+            Forgot password?
+          </Link>
+        </p>
+      ) : null}
       <p className="text-center text-sm text-slate-600">
         {isLogin ? "Need an account?" : "Already have an account?"}{" "}
         <Link

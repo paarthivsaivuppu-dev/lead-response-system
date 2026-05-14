@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { isBusinessAccessible } from "@/lib/business/access";
 import { createLeadForBusiness } from "@/lib/leads/create-lead";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -69,6 +70,10 @@ export async function submitPublicLead(
 
   if (error || !business) {
     throw new Error("Form not found.");
+  }
+
+  if (!isBusinessAccessible(business as Business)) {
+    throw new Error("This enquiry form is not currently available.");
   }
 
   const notificationRules = await getPublicLeadNotificationRules(businessId);

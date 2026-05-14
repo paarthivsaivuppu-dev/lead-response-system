@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BarChart3, Inbox, LayoutDashboard, Settings, Sparkles } from "lucide-react";
+import { RestrictedAccess } from "@/components/dashboard/restricted-access";
 import { DashboardStatusNotices } from "@/components/dashboard/status-notices";
+import { isBusinessAccessible } from "@/lib/business/access";
 import { getBusinessSettings, getCurrentBusiness } from "@/lib/data";
 import { getSmsSafetyConfig } from "@/lib/sms/config";
 import { createClient } from "@/lib/supabase/server";
@@ -40,6 +42,7 @@ export default async function DashboardLayout({
     Boolean(business) &&
     (!smsConfig.businessSmsAlertsEnabled ||
       businessSettings?.sms_alerts_enabled !== true);
+  const hasDashboardAccess = !business || isBusinessAccessible(business);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -52,7 +55,7 @@ export default async function DashboardLayout({
             <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-accent text-sm font-semibold text-white shadow-sm">
               <Sparkles className="h-4 w-4" strokeWidth={2.4} />
             </span>
-            LeadResponse AI
+            ClinicResponse AI
           </Link>
           <nav className="flex items-center gap-1">
             {navItems.map((item) => {
@@ -77,7 +80,7 @@ export default async function DashboardLayout({
           showBusinessSmsOffNotice={showBusinessSmsOffNotice}
           showCustomerSmsTestNotice={showCustomerSmsTestNotice}
         />
-        {children}
+        {hasDashboardAccess ? children : <RestrictedAccess />}
       </main>
     </div>
   );

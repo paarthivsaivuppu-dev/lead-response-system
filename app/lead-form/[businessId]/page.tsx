@@ -1,5 +1,7 @@
 import { submitPublicLead } from "@/app/lead-form/[businessId]/actions";
 import { Sparkles } from "lucide-react";
+import { SubmitButton } from "@/components/ui/submit-button";
+import { isBusinessAccessible } from "@/lib/business/access";
 import { createClient } from "@/lib/supabase/server";
 import type { Business } from "@/lib/types";
 
@@ -42,6 +44,21 @@ export default async function PublicLeadFormPage({
 
   const currentBusiness = business as Business;
 
+  if (!isBusinessAccessible(currentBusiness)) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background px-6">
+        <section className="app-card w-full max-w-lg p-8 text-center">
+          <h1 className="text-2xl font-semibold text-foreground">
+            Form not available
+          </h1>
+          <p className="mt-3 muted-copy">
+            This clinic enquiry form is not currently accepting new enquiries.
+          </p>
+        </section>
+      </main>
+    );
+  }
+
   if (submitted === "1") {
     return (
       <main className="flex min-h-screen items-center justify-center bg-background px-6">
@@ -69,9 +86,6 @@ export default async function PublicLeadFormPage({
           <h1 className="mt-2 text-3xl font-semibold text-foreground">
             Send an enquiry
           </h1>
-          <p className="mx-auto mt-3 max-w-xl muted-copy">
-            Share a few details and the team will receive your enquiry.
-          </p>
         </div>
 
         <form
@@ -143,12 +157,9 @@ export default async function PublicLeadFormPage({
           </div>
 
           <div className="mt-6 flex justify-end">
-            <button
-              className="inline-flex min-h-10 items-center justify-center rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-accent-dark"
-              type="submit"
-            >
+            <SubmitButton pendingText="Sending enquiry...">
               Send enquiry
-            </button>
+            </SubmitButton>
           </div>
         </form>
       </section>

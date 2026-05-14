@@ -1,4 +1,5 @@
 import { extractLeadDetails } from "@/lib/ai/extract-lead";
+import { isBusinessAccessible } from "@/lib/business/access";
 import { sendLeadNotificationEmail } from "@/lib/email/lead-notification";
 import { normalizeAustralianMobilePhone } from "@/lib/phone/normalize";
 import { sendCustomerAutoReply } from "@/lib/sms/customer-auto-reply";
@@ -34,6 +35,12 @@ export async function createLeadForBusiness({
   initialStatus = "New",
   smsAlertsEnabled = false
 }: CreateLeadForBusinessInput) {
+  if (!isBusinessAccessible(business)) {
+    throw new Error(
+      "Your ClinicResponse AI pilot is currently paused or expired."
+    );
+  }
+
   const normalizedPhone = customerPhone
     ? normalizeAustralianMobilePhone(customerPhone)
     : null;
@@ -90,6 +97,8 @@ export async function createLeadForBusiness({
         intent: extraction.intent,
         ai_summary: extraction.ai_summary,
         lead_quality: extraction.lead_quality,
+        booking_readiness: extraction.booking_readiness,
+        booking_readiness_reason: extraction.booking_readiness_reason,
         recommended_next_action: extraction.recommended_next_action,
         confidence: extraction.confidence,
         ai_extracted_at: new Date().toISOString(),

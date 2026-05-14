@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { Resend } from "resend";
+import { isBusinessAccessible } from "@/lib/business/access";
 import { classifyInboundEmail } from "@/lib/email/classify-inbound-email";
 import { createLeadForBusiness } from "@/lib/leads/create-lead";
 import { normalizeAustralianMobilePhone } from "@/lib/phone/normalize";
@@ -116,6 +117,27 @@ function extractNameFromEmailBody(value: string) {
   }
 
   return null;
+}
+
+function extractFirstNameFromEmail(email: string | null) {
+  const localPart = email?.split("@")[0] ?? "";
+  const [candidate] = localPart
+    .replace(/[._+-]+/g, " ")
+    .replace(/\d+/g, " ")
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (!candidate || candidate.length < 2) {
+    return null;
+  }
+
+  const cleaned = candidate.replace(/[^\p{L}'-]/gu, "");
+
+  if (cleaned.length < 2) {
+    return null;
+  }
+
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1).toLowerCase();
 }
 
 async function parseWebhookEvent(request: NextRequest) {
@@ -274,6 +296,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true, skipped: true });
     }
 
+    if (!isBusinessAccessible(business as Business)) {
+      console.log(
+        `Resend inbound email skipped: business ${business.id} pilot is paused or expired.`
+      );
+      await updateLog({
+        processing_status: "skipped",
+        error_message:
+          "Business pilot is paused or expired; no lead was created."
+      });
+      return NextResponse.json({ ok: true, skipped: true });
+    }
+
     if (
       classification.classification === "verification" ||
       classification.classification === "non_enquiry"
@@ -297,7 +331,10 @@ export async function POST(request: NextRequest) {
     );
 
     const customerName =
-      extractNameFromEmailBody(body) || sender.name || sender.email || "Email enquiry";
+      extractNameFromEmailBody(body) ||
+      sender.name ||
+      extractFirstNameFromEmail(sender.email) ||
+      "Unknown";
     const originalMessage = [
       subject ? `Subject: ${subject}` : null,
       body || null

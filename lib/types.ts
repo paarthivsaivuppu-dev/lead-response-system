@@ -11,12 +11,37 @@ export const leadStatuses = [
 
 export type LeadStatus = (typeof leadStatuses)[number];
 
+export type BookingReadiness =
+  | "booking_ready"
+  | "interested"
+  | "low_intent"
+  | "needs_review";
+
+export type PilotStatus =
+  | "pilot_active"
+  | "pilot_expired"
+  | "paid"
+  | "paused"
+  | "cancelled";
+
+export type SubscriptionStatus =
+  | "trialing"
+  | "active"
+  | "inactive"
+  | "past_due"
+  | "cancelled";
+
 export type Business = {
   id: string;
   name: string;
   notification_email: string | null;
   notification_phone: string | null;
   inbound_email_alias: string | null;
+  pilot_status: PilotStatus;
+  pilot_starts_at: string | null;
+  pilot_ends_at: string | null;
+  subscription_status: SubscriptionStatus;
+  pilot_lead_limit: number;
   reply_tone: string | null;
   created_at: string;
 };
@@ -40,6 +65,8 @@ export type Lead = {
   intent: string | null;
   ai_summary: string | null;
   lead_quality: string | null;
+  booking_readiness: BookingReadiness | null;
+  booking_readiness_reason: string | null;
   recommended_next_action: string | null;
   confidence: number | null;
   ai_extracted_at: string | null;

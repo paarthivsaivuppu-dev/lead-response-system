@@ -9,6 +9,29 @@ create table if not exists public.businesses (
   notification_email text,
   notification_phone text,
   inbound_email_alias text unique,
+  pilot_status text not null default 'pilot_active'
+    check (
+      pilot_status in (
+        'pilot_active',
+        'pilot_expired',
+        'paid',
+        'paused',
+        'cancelled'
+      )
+    ),
+  pilot_starts_at timestamptz default now(),
+  pilot_ends_at timestamptz default (now() + interval '30 days'),
+  subscription_status text not null default 'trialing'
+    check (
+      subscription_status in (
+        'trialing',
+        'active',
+        'inactive',
+        'past_due',
+        'cancelled'
+      )
+    ),
+  pilot_lead_limit integer not null default 50,
   reply_tone text default 'Friendly and professional',
   created_at timestamptz not null default now()
 );
@@ -35,6 +58,17 @@ create table if not exists public.leads (
   intent text,
   ai_summary text,
   lead_quality text,
+  booking_readiness text
+    check (
+      booking_readiness is null
+      or booking_readiness in (
+        'booking_ready',
+        'interested',
+        'low_intent',
+        'needs_review'
+      )
+    ),
+  booking_readiness_reason text,
   recommended_next_action text,
   confidence numeric,
   ai_extracted_at timestamptz,

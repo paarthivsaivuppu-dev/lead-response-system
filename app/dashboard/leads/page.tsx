@@ -1,9 +1,7 @@
 import Link from "next/link";
 import { EmptyBusiness } from "@/components/dashboard/empty-business";
-import { SourceBadge } from "@/components/leads/source-badge";
-import { StatusBadge } from "@/components/leads/status-badge";
+import { LeadsTable } from "@/components/leads/leads-table";
 import { leadStatuses } from "@/lib/types";
-import { formatDate } from "@/lib/utils";
 import { getLeadsForCurrentBusiness } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
@@ -49,10 +47,6 @@ export default async function LeadsPage({ searchParams }: LeadsPageProps) {
           <div>
             <p className="page-kicker">{business.name}</p>
             <h1 className="page-title">Leads</h1>
-            <p className="mt-3 max-w-2xl muted-copy">
-              Search, filter, and open each enquiry without a heavy CRM
-              workflow.
-            </p>
           </div>
           <Link
             className="inline-flex min-h-10 items-center justify-center rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-accent-dark"
@@ -139,45 +133,7 @@ export default async function LeadsPage({ searchParams }: LeadsPageProps) {
       </form>
 
       <section className="app-card overflow-hidden">
-        <div className="overflow-x-auto">
-        <table className="w-full min-w-[760px] border-collapse text-left text-sm">
-          <thead className="bg-cyan-50/70 text-xs uppercase text-muted">
-            <tr>
-              <th className="px-5 py-3 font-semibold">Lead</th>
-              <th className="px-5 py-3 font-semibold">Contact</th>
-              <th className="px-5 py-3 font-semibold">Source</th>
-              <th className="px-5 py-3 font-semibold">Status</th>
-              <th className="px-5 py-3 font-semibold">Created</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border bg-white">
-            {filteredLeads.map((lead) => (
-              <tr className="transition hover:bg-cyan-50/50" key={lead.id}>
-                <td className="px-5 py-4">
-                  <Link
-                    className="font-medium text-foreground underline-offset-4 hover:text-accent hover:underline"
-                    href={`/dashboard/leads/${lead.id}`}
-                  >
-                    {lead.full_name}
-                  </Link>
-                </td>
-                <td className="px-5 py-4 text-muted">
-                  {lead.email ?? lead.phone ?? "No contact details"}
-                </td>
-                <td className="px-5 py-4">
-                  <SourceBadge source={lead.source} />
-                </td>
-                <td className="px-5 py-4">
-                  <StatusBadge status={lead.status} />
-                </td>
-                <td className="px-5 py-4 text-muted">
-                  {formatDate(lead.created_at)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        </div>
+        <LeadsTable leads={filteredLeads} />
         {filteredLeads.length === 0 ? (
           <p className="border-t border-border px-5 py-6 muted-copy">
             No leads match these filters.
