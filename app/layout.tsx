@@ -9,10 +9,11 @@ export const metadata: Metadata = {
   description: "Clinic enquiry response and follow-up software.",
   icons: {
     icon: [
+      { url: "/favicon.ico", sizes: "any" },
       { url: "/favicon.svg", type: "image/svg+xml" },
       { url: "/icon.svg", type: "image/svg+xml" }
     ],
-    shortcut: "/favicon.svg"
+    shortcut: "/favicon.ico"
   }
 };
 
