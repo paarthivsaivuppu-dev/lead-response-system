@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { useRef, useState, useTransition } from "react";
-import { deleteSelectedInboundEmailLogs } from "@/app/dashboard/inbound-emails/actions";
+import {
+  deleteSelectedInboundEmailLogs,
+  deleteSelectedInboundEmailLogsAndLinkedLeads
+} from "@/app/dashboard/inbound-emails/actions";
 import { Button } from "@/components/ui/button";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import type {
@@ -114,10 +117,17 @@ function getDisplayState(log: InboundEmailLog): {
 export function InboundEmailLogsTable({ logs }: InboundEmailLogsTableProps) {
   const formRef = useRef<HTMLFormElement>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<
+    "logs-only" | "logs-and-leads" | null
+  >(null);
   const [isPending, startTransition] = useTransition();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const selectedCount = selectedIds.length;
   const allSelected = logs.length > 0 && selectedCount === logs.length;
+  const selectedLogs = logs.filter((log) => selectedIds.includes(log.id));
+  const selectedMayHaveLinkedLeads = selectedLogs.some(
+    (log) => log.lead_id || log.processing_status === "lead_created"
+  );
 
   function toggleAll() {
     setSelectedIds(allSelected ? [] : logs.map((log) => log.id));
@@ -129,6 +139,29 @@ export function InboundEmailLogsTable({ logs }: InboundEmailLogsTableProps) {
         ? currentIds.filter((currentId) => currentId !== logId)
         : [...currentIds, logId]
     );
+  }
+
+  function deleteSelection(mode: "logs-only" | "logs-and-leads") {
+    const form = formRef.current;
+
+    if (!form) {
+      return;
+    }
+
+    setPendingAction(mode);
+
+    startTransition(() => {
+      const action =
+        mode === "logs-and-leads"
+          ? deleteSelectedInboundEmailLogsAndLinkedLeads
+          : deleteSelectedInboundEmailLogs;
+
+      void action(new FormData(form)).then(() => {
+        setSelectedIds([]);
+        setIsConfirmOpen(false);
+        setPendingAction(null);
+      });
+    });
   }
 
   return (
@@ -288,29 +321,102 @@ export function InboundEmailLogsTable({ logs }: InboundEmailLogsTableProps) {
         </p>
       ) : null}
 
-      <ConfirmationDialog
-        body="This will remove the selected email logs. Any linked leads will remain."
-        confirmLabel="Delete logs"
-        isOpen={isConfirmOpen}
-        isPending={isPending}
-        onCancel={() => setIsConfirmOpen(false)}
-        onConfirm={() => {
-          const form = formRef.current;
-
-          if (!form) {
-            return;
-          }
-
-          startTransition(() => {
-            void deleteSelectedInboundEmailLogs(new FormData(form)).then(() => {
-              setSelectedIds([]);
-              setIsConfirmOpen(false);
-            });
-          });
-        }}
-        pendingLabel="Deleting..."
-        title="Delete email logs?"
-      />
+      {selectedMayHaveLinkedLeads ? (
+        <InboundEmailDeleteChoiceDialog
+          isOpen={isConfirmOpen}
+          isPending={isPending}
+          onCancel={() => {
+            setIsConfirmOpen(false);
+            setPendingAction(null);
+          }}
+          onDeleteLogsAndLeads={() => deleteSelection("logs-and-leads")}
+          onDeleteLogsOnly={() => deleteSelection("logs-only")}
+          pendingAction={pendingAction}
+        />
+      ) : (
+        <ConfirmationDialog
+          body="This will remove the selected email logs."
+          confirmLabel="Delete logs"
+          isOpen={isConfirmOpen}
+          isPending={isPending}
+          onCancel={() => setIsConfirmOpen(false)}
+          onConfirm={() => deleteSelection("logs-only")}
+          pendingLabel="Deleting..."
+          title="Delete email logs?"
+        />
+      )}
     </form>
+  );
+}
+
+function InboundEmailDeleteChoiceDialog({
+  isOpen,
+  isPending,
+  onCancel,
+  onDeleteLogsAndLeads,
+  onDeleteLogsOnly,
+  pendingAction
+}: {
+  isOpen: boolean;
+  isPending: boolean;
+  onCancel: () => void;
+  onDeleteLogsAndLeads: () => void;
+  onDeleteLogsOnly: () => void;
+  pendingAction: "logs-only" | "logs-and-leads" | null;
+}) {
+  if (!isOpen) {
+    return null;
+  }
+
+  return (
+    <div
+      aria-labelledby="inbound-email-delete-dialog-title"
+      aria-modal="true"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/25 px-4 backdrop-blur-[2px]"
+      role="dialog"
+    >
+      <div className="w-full max-w-lg rounded-2xl border border-border bg-white p-6 shadow-xl">
+        <h2
+          className="text-lg font-semibold text-foreground"
+          id="inbound-email-delete-dialog-title"
+        >
+          Delete inbound emails?
+        </h2>
+        <p className="mt-3 text-sm leading-6 text-muted">
+          Some selected emails created leads. Choose whether to delete only the
+          email logs or also remove the linked leads.
+        </p>
+        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <Button
+            disabled={isPending}
+            onClick={onCancel}
+            type="button"
+            variant="outline"
+          >
+            Cancel
+          </Button>
+          <Button
+            disabled={isPending}
+            onClick={onDeleteLogsOnly}
+            type="button"
+            variant="outline"
+          >
+            {isPending && pendingAction === "logs-only"
+              ? "Deleting..."
+              : "Delete logs only"}
+          </Button>
+          <Button
+            className="bg-rose-600 text-white hover:bg-rose-700"
+            disabled={isPending}
+            onClick={onDeleteLogsAndLeads}
+            type="button"
+          >
+            {isPending && pendingAction === "logs-and-leads"
+              ? "Deleting..."
+              : "Delete logs and linked leads"}
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }

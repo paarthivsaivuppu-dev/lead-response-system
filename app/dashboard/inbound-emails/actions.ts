@@ -135,6 +135,74 @@ export async function deleteSelectedInboundEmailLogs(formData: FormData) {
   revalidatePath("/dashboard/inbound-emails");
 }
 
+export async function deleteSelectedInboundEmailLogsAndLinkedLeads(
+  formData: FormData
+) {
+  const logIds = formData
+    .getAll("log_ids")
+    .map((value) => String(value))
+    .filter(Boolean);
+
+  if (logIds.length === 0) {
+    return;
+  }
+
+  const business = await getCurrentBusiness();
+
+  if (!business) {
+    throw new Error("No connected business found.");
+  }
+
+  const supabase = createAdminClient();
+  const { data: logs, error: logsError } = await supabase
+    .from("inbound_email_logs")
+    .select("id, from_email, lead_id, processing_status")
+    .eq("business_id", business.id)
+    .in("id", logIds);
+
+  if (logsError) {
+    throw new Error(logsError.message);
+  }
+
+  const linkedLeadIds = new Set<string>();
+
+  for (const log of logs ?? []) {
+    const leadId = await findLinkedLeadId({
+      businessId: business.id,
+      fromEmail: log.from_email as string | null,
+      leadId: log.lead_id as string | null,
+      processingStatus: log.processing_status as string,
+      supabase
+    });
+
+    if (leadId) {
+      linkedLeadIds.add(leadId);
+    }
+  }
+
+  for (const leadId of linkedLeadIds) {
+    await deleteLeadRecords({
+      businessId: business.id,
+      leadId,
+      supabase
+    });
+  }
+
+  const { error: deleteLogsError } = await supabase
+    .from("inbound_email_logs")
+    .delete()
+    .eq("business_id", business.id)
+    .in("id", logIds);
+
+  if (deleteLogsError) {
+    throw new Error(deleteLogsError.message);
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/leads");
+  revalidatePath("/dashboard/inbound-emails");
+}
+
 export async function deleteInboundEmailLogOnly(logId: string) {
   const { business, supabase } = await getOwnedInboundEmailLog(logId);
 
