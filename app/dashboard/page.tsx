@@ -3,6 +3,10 @@ import { EmptyBusiness } from "@/components/dashboard/empty-business";
 import { SourceBadge } from "@/components/leads/source-badge";
 import { StatusBadge } from "@/components/leads/status-badge";
 import { getLeadsForCurrentBusiness } from "@/lib/data";
+import {
+  normaliseServiceName,
+  normaliseServiceNames
+} from "@/lib/leads/normalise-service";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +45,7 @@ function getTreatmentDemand(
 
   for (const lead of leads) {
     const createdAt = new Date(lead.created_at).getTime();
-    const service = lead.service_requested?.trim();
+    const services = normaliseServiceNames(lead.service_requested);
 
     if (Number.isNaN(createdAt) || createdAt < thirtyDaysAgo) {
       continue;
@@ -49,18 +53,14 @@ function getTreatmentDemand(
 
     recentLeadCount += 1;
 
-    if (
-      !service ||
-      ["unknown", "not specified", "no service captured yet"].includes(
-        service.toLowerCase()
-      )
-    ) {
+    if (services.length === 0) {
       unclassifiedCount += 1;
       continue;
     }
 
-    const normalizedService = formatLabel(service.toLowerCase());
-    counts.set(normalizedService, (counts.get(normalizedService) ?? 0) + 1);
+    for (const service of services) {
+      counts.set(service, (counts.get(service) ?? 0) + 1);
+    }
   }
 
   const services = Array.from(counts.entries())
@@ -198,7 +198,7 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-7">
       <section>
-        <p className="page-kicker">{business.name}</p>
+        <p className="page-kicker safe-text">{business.name}</p>
         <h1 className="page-title">Dashboard</h1>
       </section>
 
@@ -322,10 +322,10 @@ export default async function DashboardPage() {
                     href={`/dashboard/leads/${lead.id}`}
                     key={lead.id}
                   >
-                    <p className="truncate text-sm font-medium text-foreground">
+                    <p className="safe-line text-sm font-medium text-foreground">
                       {formatLeadName(lead.full_name)}
                     </p>
-                    <p className="min-w-0 truncate text-sm text-muted">
+                    <p className="safe-line text-sm text-muted">
                       {reason}
                     </p>
                     <div className="justify-self-end">
@@ -357,15 +357,15 @@ export default async function DashboardPage() {
               key={lead.id}
             >
               <div className="min-w-0">
-                <p className="truncate font-medium text-foreground">
+                <p className="safe-line font-medium text-foreground">
                   {formatLeadName(lead.full_name)}
                 </p>
-                <p className="mt-1 truncate text-sm text-muted">
+                <p className="safe-line mt-1 text-sm text-muted">
                   {lead.email ?? lead.phone ?? "No contact details"}
                 </p>
               </div>
-              <p className="min-w-0 truncate text-sm text-slate-700">
-                {formatLabel(lead.service_requested)}
+              <p className="safe-line text-sm text-slate-700">
+                {normaliseServiceName(lead.service_requested) ?? formatLabel(null)}
               </p>
               <div className="justify-self-start md:justify-self-start">
                 <SourceBadge source={lead.source} />
@@ -421,7 +421,7 @@ export default async function DashboardPage() {
                 key={item.service}
               >
                 <p
-                  className={`truncate text-sm font-medium ${
+                  className={`safe-line text-sm font-medium ${
                     isOtherServices ? "text-muted" : "text-foreground"
                   }`}
                 >

@@ -60,4 +60,24 @@ textarea {
   .muted-copy {
     @apply text-sm leading-6 text-muted;
   }
+
+  .safe-text {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .safe-line {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .safe-pre {
+    min-width: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
 }

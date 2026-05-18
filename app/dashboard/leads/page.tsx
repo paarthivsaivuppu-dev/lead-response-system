@@ -45,7 +45,7 @@ export default async function LeadsPage({ searchParams }: LeadsPageProps) {
       <section>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="page-kicker">{business.name}</p>
+            <p className="page-kicker safe-text">{business.name}</p>
             <h1 className="page-title">Leads</h1>
           </div>
           <Link

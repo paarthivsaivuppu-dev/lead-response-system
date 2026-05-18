@@ -3,8 +3,10 @@
 import { redirect } from "next/navigation";
 import { isBusinessAccessible } from "@/lib/business/access";
 import { createLeadForBusiness } from "@/lib/leads/create-lead";
+import { normalizeAustralianPhoneNumber } from "@/lib/phone/normalize";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { isValidOptionalEmail } from "@/lib/forms/validation";
 import type { Business } from "@/lib/types";
 
 type NotificationRules = {
@@ -59,6 +61,14 @@ export async function submitPublicLead(
 
   if (!originalMessage) {
     throw new Error("Message is required.");
+  }
+
+  if (customerPhone && !normalizeAustralianPhoneNumber(customerPhone).ok) {
+    redirect(`/lead-form/${businessId}?error=invalid_phone`);
+  }
+
+  if (!isValidOptionalEmail(customerEmail)) {
+    redirect(`/lead-form/${businessId}?error=invalid_email`);
   }
 
   const supabase = await createClient();

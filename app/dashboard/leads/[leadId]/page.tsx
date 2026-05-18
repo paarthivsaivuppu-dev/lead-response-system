@@ -56,9 +56,9 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
 
       <section className="app-card p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="page-kicker">{business.name}</p>
-            <h1 className="page-title">
+          <div className="min-w-0">
+            <p className="page-kicker safe-text">{business.name}</p>
+            <h1 className="page-title safe-text">
               {formatLeadName(lead.full_name)}
             </h1>
             <p className="mt-2 text-sm text-muted">
@@ -69,15 +69,19 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
         </div>
 
         <div className="mt-6 grid gap-4 md:grid-cols-3">
-          <div className="rounded-xl border border-border bg-cyan-50/40 p-4">
+          <div className="min-w-0 rounded-xl border border-border bg-cyan-50/40 p-4">
             <p className="text-xs font-semibold uppercase text-slate-500">Email</p>
-            <p className="mt-1 text-sm text-foreground">{lead.email ?? "Not added"}</p>
+            <p className="safe-text mt-1 text-sm text-foreground">
+              {lead.email ?? "Not added"}
+            </p>
           </div>
-          <div className="rounded-xl border border-border bg-cyan-50/40 p-4">
+          <div className="min-w-0 rounded-xl border border-border bg-cyan-50/40 p-4">
             <p className="text-xs font-semibold uppercase text-slate-500">Phone</p>
-            <p className="mt-1 text-sm text-foreground">{lead.phone ?? "Not added"}</p>
+            <p className="safe-text mt-1 text-sm text-foreground">
+              {lead.phone ?? "Not added"}
+            </p>
           </div>
-          <div className="rounded-xl border border-border bg-cyan-50/40 p-4">
+          <div className="min-w-0 rounded-xl border border-border bg-cyan-50/40 p-4">
             <p className="text-xs font-semibold uppercase text-slate-500">Source</p>
             <div className="mt-2">
               <SourceBadge source={lead.source} />
@@ -88,7 +92,7 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
         {lead.notes ? (
           <div className="mt-6 rounded-xl border border-border bg-slate-50/80 p-4">
             <p className="text-xs font-semibold uppercase text-slate-500">Notes</p>
-            <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-700">
+            <p className="safe-pre mt-2 text-sm leading-6 text-slate-700">
               {lead.notes}
             </p>
           </div>
@@ -115,29 +119,29 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
         </div>
         {lead.ai_extracted_at ? (
           <div className="grid gap-4 p-6 md:grid-cols-2">
-            <div className="rounded-xl border border-teal-100 bg-teal-50/70 p-4 md:col-span-2">
+            <div className="min-w-0 rounded-xl border border-teal-100 bg-teal-50/70 p-4 md:col-span-2">
               <p className="text-xs font-semibold uppercase text-slate-500">
                 Booking readiness
               </p>
               <div className="mt-2">
                 <BookingReadinessBadge readiness={lead.booking_readiness} />
               </div>
-              <p className="mt-3 text-sm leading-6 text-foreground">
+              <p className="safe-text mt-3 text-sm leading-6 text-foreground">
                 {lead.booking_readiness_reason ??
                   `${formatBookingReadiness(
                     lead.booking_readiness
                   )} has not been explained yet.`}
               </p>
             </div>
-            <div className="rounded-xl bg-cyan-50/45 p-4">
+            <div className="min-w-0 rounded-xl bg-cyan-50/45 p-4">
               <p className="text-xs font-semibold uppercase text-slate-500">
                 Service requested
               </p>
-              <p className="mt-1 text-sm text-foreground">
+              <p className="safe-text mt-1 text-sm text-foreground">
                 {formatLabel(lead.service_requested)}
               </p>
             </div>
-            <div className="rounded-xl bg-cyan-50/45 p-4">
+            <div className="min-w-0 rounded-xl bg-cyan-50/45 p-4">
               <p className="text-xs font-semibold uppercase text-slate-500">
                 Urgency
               </p>
@@ -145,7 +149,7 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
                 {formatLabel(lead.urgency)}
               </p>
             </div>
-            <div className="rounded-xl bg-cyan-50/45 p-4">
+            <div className="min-w-0 rounded-xl bg-cyan-50/45 p-4">
               <p className="text-xs font-semibold uppercase text-slate-500">
                 Intent
               </p>
@@ -153,7 +157,7 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
                 {formatLabel(lead.intent)}
               </p>
             </div>
-            <div className="rounded-xl bg-cyan-50/45 p-4">
+            <div className="min-w-0 rounded-xl bg-cyan-50/45 p-4">
               <p className="text-xs font-semibold uppercase text-slate-500">
                 Lead quality
               </p>
@@ -161,7 +165,7 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
                 {formatLabel(lead.lead_quality)}
               </p>
             </div>
-            <div className="rounded-xl bg-cyan-50/45 p-4">
+            <div className="min-w-0 rounded-xl bg-cyan-50/45 p-4">
               <p className="text-xs font-semibold uppercase text-slate-500">
                 Confidence
               </p>
@@ -171,19 +175,19 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
                   : `${Math.round(lead.confidence * 100)}%`}
               </p>
             </div>
-            <div className="rounded-xl border border-teal-100 bg-teal-50/70 p-4">
+            <div className="min-w-0 rounded-xl border border-teal-100 bg-teal-50/70 p-4">
               <p className="text-xs font-semibold uppercase text-slate-500">
                 Recommended next action
               </p>
-              <p className="mt-1 text-sm leading-6 text-foreground">
+              <p className="safe-text mt-1 text-sm leading-6 text-foreground">
                 {lead.recommended_next_action ?? "Unknown"}
               </p>
             </div>
-            <div className="rounded-xl border border-border bg-white p-4 md:col-span-2">
+            <div className="min-w-0 rounded-xl border border-border bg-white p-4 md:col-span-2">
               <p className="text-xs font-semibold uppercase text-slate-500">
                 Summary
               </p>
-              <p className="mt-1 text-sm leading-6 text-slate-700">
+              <p className="safe-text mt-1 text-sm leading-6 text-slate-700">
                 {lead.ai_summary ?? "No summary available."}
               </p>
             </div>
@@ -211,7 +215,7 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
                 <span>{message.channel}</span>
                 <span>{formatDate(message.created_at)}</span>
               </div>
-              <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-700">
+              <p className="safe-pre mt-2 text-sm leading-6 text-slate-700">
                 {message.body}
               </p>
             </div>

@@ -1,7 +1,8 @@
 import { extractLeadDetails } from "@/lib/ai/extract-lead";
 import { isBusinessAccessible } from "@/lib/business/access";
 import { sendLeadNotificationEmail } from "@/lib/email/lead-notification";
-import { normalizeAustralianMobilePhone } from "@/lib/phone/normalize";
+import { normaliseServiceName } from "@/lib/leads/normalise-service";
+import { normalizeAustralianPhoneNumber } from "@/lib/phone/normalize";
 import { sendCustomerAutoReply } from "@/lib/sms/customer-auto-reply";
 import { sendLeadSmsNotification } from "@/lib/sms/lead-notification";
 import type { Business, LeadStatus } from "@/lib/types";
@@ -42,11 +43,15 @@ export async function createLeadForBusiness({
   }
 
   const normalizedPhone = customerPhone
-    ? normalizeAustralianMobilePhone(customerPhone)
+    ? normalizeAustralianPhoneNumber(customerPhone)
     : null;
-  const storedPhone = normalizedPhone?.ok
-    ? normalizedPhone.value
-    : customerPhone || null;
+  const shouldRejectInvalidPhone = source === "manual" || source === "website";
+
+  if (normalizedPhone && !normalizedPhone.ok && shouldRejectInvalidPhone) {
+    throw new Error(normalizedPhone.reason);
+  }
+
+  const storedPhone = normalizedPhone?.ok ? normalizedPhone.value : null;
   const invalidPhoneNote =
     normalizedPhone && !normalizedPhone.ok ? normalizedPhone.reason : null;
 
@@ -88,6 +93,9 @@ export async function createLeadForBusiness({
 
   try {
     extraction = await extractLeadDetails(originalMessage);
+    extraction.service_requested =
+      normaliseServiceName(extraction.service_requested) ??
+      extraction.service_requested;
 
     await supabase
       .from("leads")

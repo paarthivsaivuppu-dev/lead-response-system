@@ -18,24 +18,33 @@ export function formatBookingReadiness(value: BookingReadiness | null) {
     .join(" ");
 }
 
+const compactReadinessLabels: Record<BookingReadiness, string> = {
+  booking_ready: "Ready",
+  interested: "Interested",
+  low_intent: "Low intent",
+  needs_review: "Review"
+};
+
 export function BookingReadinessBadge({
+  compact = false,
   readiness
 }: {
+  compact?: boolean;
   readiness: BookingReadiness | null;
 }) {
   if (!readiness) {
     return (
-      <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600 ring-1 ring-slate-200">
-        Not Classified
+      <span className="inline-flex whitespace-nowrap rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium leading-5 text-slate-600 ring-1 ring-slate-200">
+        {compact ? "Not classified" : "Not Classified"}
       </span>
     );
   }
 
   return (
     <span
-      className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ring-1 ${readinessStyles[readiness]}`}
+      className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium leading-5 ring-1 ${readinessStyles[readiness]}`}
     >
-      {formatBookingReadiness(readiness)}
+      {compact ? compactReadinessLabels[readiness] : formatBookingReadiness(readiness)}
     </span>
   );
 }

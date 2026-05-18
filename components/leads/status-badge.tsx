@@ -14,7 +14,7 @@ const statusStyles: Record<LeadStatus, string> = {
 export function StatusBadge({ status }: { status: LeadStatus }) {
   return (
     <span
-      className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ring-1 ${statusStyles[status]}`}
+      className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium leading-5 ring-1 ${statusStyles[status]}`}
     >
       {status}
     </span>

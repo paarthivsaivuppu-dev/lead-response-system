@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { EmptyBusiness } from "@/components/dashboard/empty-business";
+import { InboundEmailDeleteActions } from "@/components/inbound-emails/inbound-email-delete-actions";
 import { getInboundEmailLogDetail } from "@/lib/data";
 import { formatDate } from "@/lib/utils";
 
@@ -38,6 +39,8 @@ export default async function InboundEmailLogDetailPage({
   }
 
   const bodyText = log.text_body || log.body_preview || "No text body stored.";
+  const senderPrimary = log.from_name ?? log.from_email ?? "Unknown sender";
+  const senderSecondary = log.from_name ? log.from_email : null;
 
   return (
     <div className="space-y-7">
@@ -50,9 +53,9 @@ export default async function InboundEmailLogDetailPage({
 
       <section className="app-card p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="page-kicker">{business.name}</p>
-            <h1 className="page-title">{log.subject || "No subject"}</h1>
+          <div className="min-w-0">
+            <p className="page-kicker safe-text">{business.name}</p>
+            <h1 className="page-title safe-text">{log.subject || "No subject"}</h1>
             <p className="mt-2 text-sm text-muted">
               Received {formatDate(log.created_at)}
             </p>
@@ -68,32 +71,34 @@ export default async function InboundEmailLogDetailPage({
         </div>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
-          <div className="rounded-xl border border-border bg-cyan-50/40 p-4">
+          <div className="min-w-0 rounded-xl border border-border bg-cyan-50/40 p-4">
             <p className="text-xs font-semibold uppercase text-slate-500">From</p>
-            <p className="mt-1 text-sm text-foreground">
-              {log.from_name ?? "Unknown sender"}
+            <p className="safe-text mt-1 text-sm text-foreground">
+              {senderPrimary}
             </p>
-            <p className="mt-1 text-xs text-muted">{log.from_email}</p>
+            {senderSecondary ? (
+              <p className="safe-text mt-1 text-xs text-muted">{senderSecondary}</p>
+            ) : null}
           </div>
-          <div className="rounded-xl border border-border bg-cyan-50/40 p-4">
+          <div className="min-w-0 rounded-xl border border-border bg-cyan-50/40 p-4">
             <p className="text-xs font-semibold uppercase text-slate-500">To</p>
-            <p className="mt-1 text-sm text-foreground">{log.to_email ?? "Unknown"}</p>
-            <p className="mt-1 text-xs text-muted">
+            <p className="safe-text mt-1 text-sm text-foreground">{log.to_email ?? "Unknown"}</p>
+            <p className="safe-text mt-1 text-xs text-muted">
               Alias: {log.inbound_alias ?? "Not found"}
             </p>
           </div>
-          <div className="rounded-xl border border-border bg-cyan-50/40 p-4">
+          <div className="min-w-0 rounded-xl border border-border bg-cyan-50/40 p-4">
             <p className="text-xs font-semibold uppercase text-slate-500">
               Classification
             </p>
             <p className="mt-1 text-sm text-foreground">
               {formatLabel(log.classification)}
             </p>
-            <p className="mt-1 text-xs leading-5 text-muted">
+            <p className="safe-text mt-1 text-xs leading-5 text-muted">
               {log.classification_reason ?? "No reason stored."}
             </p>
           </div>
-          <div className="rounded-xl border border-border bg-cyan-50/40 p-4">
+          <div className="min-w-0 rounded-xl border border-border bg-cyan-50/40 p-4">
             <p className="text-xs font-semibold uppercase text-slate-500">
               Processing status
             </p>
@@ -101,7 +106,7 @@ export default async function InboundEmailLogDetailPage({
               {formatLabel(log.processing_status)}
             </p>
             {log.error_message ? (
-              <p className="mt-1 text-xs leading-5 text-rose-700">
+              <p className="safe-text mt-1 text-xs leading-5 text-rose-700">
                 {log.error_message}
               </p>
             ) : null}
@@ -109,12 +114,17 @@ export default async function InboundEmailLogDetailPage({
         </div>
       </section>
 
+      <InboundEmailDeleteActions
+        hasLinkedLead={Boolean(lead)}
+        logId={log.id}
+      />
+
       <section className="app-card overflow-hidden">
         <div className="app-card-header">
           <h2 className="section-title">Email body</h2>
         </div>
         <div className="p-6">
-          <pre className="max-h-[560px] whitespace-pre-wrap rounded-xl border border-border bg-slate-50 p-4 text-sm leading-6 text-slate-700">
+          <pre className="safe-pre rounded-xl border border-border bg-slate-50 p-4 text-sm leading-6 text-slate-700">
             {bodyText}
           </pre>
         </div>

@@ -32,7 +32,7 @@ export function SourceBadge({ source }: { source: string | null }) {
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ${
+      className={`inline-flex whitespace-nowrap items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium leading-5 ring-1 ${
         sourceStyles[normalized] ?? "bg-slate-50 text-slate-700 ring-slate-200"
       }`}
     >

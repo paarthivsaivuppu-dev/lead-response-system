@@ -14,7 +14,7 @@ export default async function InboundEmailsPage() {
   return (
     <div className="space-y-7">
       <section>
-        <p className="page-kicker">{business.name}</p>
+        <p className="page-kicker safe-text">{business.name}</p>
         <h1 className="page-title">Inbound Emails</h1>
       </section>
 

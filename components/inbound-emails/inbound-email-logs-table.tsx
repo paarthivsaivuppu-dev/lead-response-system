@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState, useTransition } from "react";
 import { deleteSelectedInboundEmailLogs } from "@/app/dashboard/inbound-emails/actions";
-import { SubmitButton } from "@/components/ui/submit-button";
+import { Button } from "@/components/ui/button";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import type {
   InboundEmailClassification,
   InboundEmailLog,
@@ -111,6 +112,9 @@ function getDisplayState(log: InboundEmailLog): {
 }
 
 export function InboundEmailLogsTable({ logs }: InboundEmailLogsTableProps) {
+  const formRef = useRef<HTMLFormElement>(null);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const selectedCount = selectedIds.length;
   const allSelected = logs.length > 0 && selectedCount === logs.length;
@@ -129,25 +133,15 @@ export function InboundEmailLogsTable({ logs }: InboundEmailLogsTableProps) {
 
   return (
     <form
-      action={async (formData) => {
-        await deleteSelectedInboundEmailLogs(formData);
-        setSelectedIds([]);
-      }}
+      ref={formRef}
       onSubmit={(event) => {
+        event.preventDefault();
+
         if (selectedCount === 0) {
-          event.preventDefault();
           return;
         }
 
-        const confirmed = window.confirm(
-          `Delete ${selectedCount} selected inbound email ${
-            selectedCount === 1 ? "log" : "logs"
-          }? This will not delete any leads that were already created.`
-        );
-
-        if (!confirmed) {
-          event.preventDefault();
-        }
+        setIsConfirmOpen(true);
       }}
     >
       {selectedIds.map((logId) => (
@@ -168,26 +162,27 @@ export function InboundEmailLogsTable({ logs }: InboundEmailLogsTableProps) {
         {selectedCount > 0 ? (
           <div className="flex items-center gap-3">
             <span className="text-sm text-muted">{selectedCount} selected</span>
-            <SubmitButton
+            <Button
               className="inline-flex min-h-9 items-center justify-center rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-sm font-medium text-rose-700 transition hover:bg-rose-100"
-              pendingText="Deleting..."
+              disabled={isPending}
+              type="submit"
               variant="outline"
             >
-              Delete selected
-            </SubmitButton>
+              {isPending ? "Deleting..." : "Delete selected"}
+            </Button>
           </div>
         ) : null}
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[940px] border-collapse text-left text-sm">
+        <table className="w-full min-w-[980px] table-fixed border-collapse text-left text-sm">
           <thead className="bg-cyan-50/70 text-xs uppercase text-muted">
             <tr>
               <th className="w-12 px-5 py-3 font-semibold">
                 <span className="sr-only">Select</span>
               </th>
               <th className="w-24 px-5 py-3 font-semibold">Received</th>
-              <th className="w-60 px-5 py-3 font-semibold">From</th>
+              <th className="w-64 px-5 py-3 font-semibold">From</th>
               <th className="px-5 py-3 font-semibold">Subject</th>
               <th className="w-36 px-5 py-3 font-semibold">Classification</th>
               <th className="w-36 px-5 py-3 font-semibold">Status</th>
@@ -218,34 +213,35 @@ export function InboundEmailLogsTable({ logs }: InboundEmailLogsTableProps) {
                   <td className="px-5 py-4 text-muted">
                     {formatDate(log.created_at)}
                   </td>
-                  <td className="max-w-60 px-5 py-4">
+                  <td className="min-w-0 px-5 py-4">
                     <p
-                      className="truncate font-medium text-foreground"
+                      className="safe-line font-medium text-foreground"
                       title={sender.primary}
                     >
                       {sender.primary}
                     </p>
                     {sender.secondary ? (
                       <p
-                        className="mt-1 truncate text-xs text-muted"
+                        className="safe-line mt-1 text-xs text-muted"
                         title={sender.secondary}
                       >
                         {sender.secondary}
                       </p>
                     ) : null}
                   </td>
-                  <td className="px-5 py-4">
+                  <td className="min-w-0 px-5 py-4">
                     <Link
-                      className="font-medium text-foreground underline-offset-4 hover:text-accent hover:underline"
+                      className="safe-line block font-medium text-foreground underline-offset-4 hover:text-accent hover:underline"
                       href={`/dashboard/inbound-emails/${log.id}`}
+                      title={log.subject || "No subject"}
                     >
                       {log.subject || "No subject"}
                     </Link>
-                    <p className="mt-1 line-clamp-2 max-w-xs text-xs leading-5 text-muted">
+                    <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted">
                       {log.body_preview || "No preview available."}
                     </p>
                     {log.error_message ? (
-                      <p className="mt-1 text-xs leading-5 text-rose-700">
+                      <p className="safe-text mt-1 text-xs leading-5 text-rose-700">
                         {log.error_message}
                       </p>
                     ) : null}
@@ -291,6 +287,30 @@ export function InboundEmailLogsTable({ logs }: InboundEmailLogsTableProps) {
           No inbound emails have been received yet.
         </p>
       ) : null}
+
+      <ConfirmationDialog
+        body="This will remove the selected email logs. Any linked leads will remain."
+        confirmLabel="Delete logs"
+        isOpen={isConfirmOpen}
+        isPending={isPending}
+        onCancel={() => setIsConfirmOpen(false)}
+        onConfirm={() => {
+          const form = formRef.current;
+
+          if (!form) {
+            return;
+          }
+
+          startTransition(() => {
+            void deleteSelectedInboundEmailLogs(new FormData(form)).then(() => {
+              setSelectedIds([]);
+              setIsConfirmOpen(false);
+            });
+          });
+        }}
+        pendingLabel="Deleting..."
+        title="Delete email logs?"
+      />
     </form>
   );
 }

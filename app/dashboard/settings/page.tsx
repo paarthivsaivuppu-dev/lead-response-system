@@ -1,5 +1,7 @@
+import { headers } from "next/headers";
 import { EmptyBusiness } from "@/components/dashboard/empty-business";
 import { LogoutButton } from "@/components/auth/logout-button";
+import { CopyButton } from "@/components/settings/copy-button";
 import { SettingsSaveNotice } from "@/components/settings/settings-save-notice";
 import { updateBusinessSettings } from "@/app/dashboard/settings/actions";
 import { getBusinessSettings, getCurrentBusiness } from "@/lib/data";
@@ -14,6 +16,7 @@ type SettingsPageProps = {
 
 export default async function SettingsPage({ searchParams }: SettingsPageProps) {
   const { saved } = await searchParams;
+  const headerStore = await headers();
   const business = await getCurrentBusiness();
 
   if (!business) {
@@ -21,11 +24,24 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
   }
 
   const settings = await getBusinessSettings(business.id);
+  const host = headerStore.get("x-forwarded-host") ?? headerStore.get("host");
+  const protocol = headerStore.get("x-forwarded-proto") ?? "http";
+  const appOrigin =
+    process.env.NEXT_PUBLIC_APP_URL ?? (host ? `${protocol}://${host}` : "");
+  const publicFormPath = `/lead-form/${business.id}`;
+  const publicFormUrl = appOrigin
+    ? `${appOrigin}${publicFormPath}`
+    : publicFormPath;
+  const inboundDomain = process.env.RESEND_INBOUND_DOMAIN?.trim();
+  const inboundAlias = business.inbound_email_alias?.trim() || null;
+  const inboundAddress =
+    inboundAlias && inboundDomain ? `${inboundAlias}@${inboundDomain}` : null;
+  const embedCode = `<iframe src="${publicFormUrl}" width="100%" height="700" style="border:0;"></iframe>`;
 
   return (
     <div className="space-y-7">
       <section>
-        <p className="page-kicker">{business.name}</p>
+        <p className="page-kicker safe-text">{business.name}</p>
         <h1 className="page-title">Settings</h1>
       </section>
 
@@ -67,7 +83,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
                 type="hidden"
                 value={business.reply_tone ?? "Friendly and professional"}
               />
-              <div className="mt-2 rounded-lg border border-border bg-slate-50 px-3 py-2.5 text-sm text-muted">
+              <div className="safe-text mt-2 rounded-lg border border-border bg-slate-50 px-3 py-2.5 text-sm text-muted">
                 {business.reply_tone ?? "Friendly and professional"}
               </div>
             </div>
@@ -183,10 +199,100 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
 
       <section className="app-card overflow-hidden">
         <div className="app-card-header">
+          <h2 className="section-title">Website enquiry capture</h2>
+        </div>
+        <div className="grid gap-4 p-6">
+          <div className="rounded-2xl border border-border bg-cyan-50/40 p-5">
+            <p className="text-sm font-semibold text-foreground">
+              Option A — Use your existing website form
+            </p>
+            <p className="mt-2 muted-copy">
+              If your website already sends enquiry emails, forward those form
+              notification emails to your inbound email address so they appear in
+              ClinicResponse.
+            </p>
+            <div className="mt-4 rounded-xl border border-cyan-100 bg-white p-4">
+              <p className="text-xs font-semibold uppercase text-slate-500">
+                Inbound email
+              </p>
+              {inboundAddress ? (
+                <div className="mt-2 flex flex-wrap items-center gap-3">
+                  <code className="safe-text rounded-lg bg-slate-50 px-3 py-2 text-sm text-foreground">
+                    {inboundAddress}
+                  </code>
+                  <CopyButton value={inboundAddress} />
+                </div>
+              ) : inboundAlias ? (
+                <div className="mt-2 space-y-2">
+                  <code className="safe-text inline-flex rounded-lg bg-slate-50 px-3 py-2 text-sm text-foreground">
+                    Alias: {inboundAlias}
+                  </code>
+                  <p className="muted-copy">
+                    The full inbound address is configured during setup.
+                  </p>
+                </div>
+              ) : (
+                <p className="mt-2 muted-copy">
+                  Set an inbound email alias above to enable email forwarding.
+                </p>
+              )}
+              <p className="mt-3 muted-copy">
+                Best when the clinic already has a working contact or enquiry
+                form on their website.
+              </p>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-white p-5">
+            <p className="text-sm font-semibold text-foreground">
+              Option B — Use the hosted ClinicResponse form
+            </p>
+            <p className="mt-2 muted-copy">
+              If you do not have a form yet, or want a fast pilot setup, use
+              this hosted enquiry form link.
+            </p>
+            <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-border bg-slate-50 p-4">
+              <code className="min-w-0 flex-1 break-all text-sm text-foreground">
+                {publicFormUrl}
+              </code>
+              <CopyButton value={publicFormUrl} />
+              <a
+                className="inline-flex min-h-9 items-center justify-center rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-accent-dark"
+                href={publicFormUrl}
+                rel="noreferrer"
+                target="_blank"
+              >
+                Open form
+              </a>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-white p-5">
+            <p className="text-sm font-semibold text-foreground">
+              Option C — Embed the ClinicResponse form
+            </p>
+            <p className="mt-2 muted-copy">
+              Embed this form on your website if you want customers to stay on
+              your site while enquiries still flow into ClinicResponse.
+            </p>
+            <div className="mt-4 rounded-xl border border-border bg-slate-50 p-4">
+              <pre className="safe-pre text-sm leading-6 text-slate-700">
+                {embedCode}
+              </pre>
+              <div className="mt-3">
+                <CopyButton label="Copy embed code" value={embedCode} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="app-card overflow-hidden">
+        <div className="app-card-header">
           <h2 className="section-title">Account</h2>
         </div>
         <div className="flex flex-wrap items-center justify-between gap-4 p-6">
-          <div>
+          <div className="min-w-0">
             <p className="text-sm font-medium text-foreground">Sign out</p>
             <p className="mt-1 muted-copy">
               Log out of this ClinicResponse AI account on this device.

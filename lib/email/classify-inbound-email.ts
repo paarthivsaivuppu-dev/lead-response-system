@@ -21,6 +21,10 @@ function includesAny(value: string, patterns: string[]) {
   return patterns.some((pattern) => value.includes(pattern));
 }
 
+function findMatchingPattern(value: string, patterns: string[]) {
+  return patterns.find((pattern) => value.includes(pattern));
+}
+
 export function classifyInboundEmail({
   fromEmail,
   fromName,
@@ -31,13 +35,16 @@ export function classifyInboundEmail({
   const combined = [fromEmail, fromName, subject, textBody, htmlBodyText]
     .filter(Boolean)
     .join("\n")
+    .replace(/\s+/g, " ")
     .toLowerCase();
 
+  // Gmail forwarding setup emails need to be visible for manual setup, not treated
+  // as generic verification-code noise.
   if (
     includesAny(combined, [
       "gmail forwarding confirmation",
       "confirm forwarding",
-      "confirmation code",
+      "forwarding confirmation code",
       "please click the link below to confirm the request",
       "forwarding confirmation",
       "forwarding address",
@@ -52,28 +59,42 @@ export function classifyInboundEmail({
     };
   }
 
-  if (
-    includesAny(combined, [
-      "unsubscribe",
-      "newsletter",
-      "receipt",
-      "tax invoice",
-      "invoice attached",
-      "delivery notification",
-      "calendar invitation",
-      "meeting invite",
-      "limited time offer",
-      "promotion",
-      "sale ends",
-      "mail delivery subsystem",
-      "delivery status notification",
-      "no-reply",
-      "noreply"
-    ])
-  ) {
+  const nonEnquiryPattern = findMatchingPattern(combined, [
+    "security alert",
+    "new sign-in",
+    "new signin",
+    "sign-in was detected",
+    "signin was detected",
+    "google account",
+    "password reset",
+    "verification code",
+    "confirm your email",
+    "account alert",
+    "login attempt",
+    "invoice",
+    "receipt",
+    "payment confirmation",
+    "newsletter",
+    "unsubscribe",
+    "calendar invitation",
+    "delivery notification",
+    "order confirmation",
+    "tax invoice",
+    "invoice attached",
+    "meeting invite",
+    "limited time offer",
+    "promotion",
+    "sale ends",
+    "mail delivery subsystem",
+    "delivery status notification",
+    "no-reply",
+    "noreply"
+  ]);
+
+  if (nonEnquiryPattern) {
     return {
       classification: "non_enquiry",
-      reason: "Looks like an operational, marketing, receipt, delivery, or automated email."
+      reason: `Looks like an automated system, admin, security, marketing, receipt, or notification email. Matched "${nonEnquiryPattern}".`
     };
   }
 

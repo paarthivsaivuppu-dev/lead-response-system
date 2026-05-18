@@ -180,7 +180,27 @@ export async function getInboundEmailLogDetail(logId: string) {
 
   const inboundLog = log as InboundEmailLog | null;
 
-  if (!inboundLog?.lead_id) {
+  if (!inboundLog) {
+    return { business, log: inboundLog, lead: null };
+  }
+
+  let leadId = inboundLog.lead_id;
+
+  if (!leadId && inboundLog.processing_status === "lead_created" && inboundLog.from_email) {
+    const { data: matchingLead } = await supabase
+      .from("leads")
+      .select("id")
+      .eq("business_id", business.id)
+      .eq("source", "email")
+      .eq("email", inboundLog.from_email)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    leadId = (matchingLead?.id as string | undefined) ?? null;
+  }
+
+  if (!leadId) {
     return { business, log: inboundLog, lead: null };
   }
 
@@ -188,7 +208,7 @@ export async function getInboundEmailLogDetail(logId: string) {
     .from("leads")
     .select("*")
     .eq("business_id", business.id)
-    .eq("id", inboundLog.lead_id)
+    .eq("id", leadId)
     .single();
 
   return {

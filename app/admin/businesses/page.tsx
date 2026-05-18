@@ -131,20 +131,20 @@ export default async function AdminBusinessesPage() {
 
         <section className="app-card overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[1180px] border-collapse text-left text-sm">
+            <table className="w-full min-w-[1180px] table-fixed border-collapse text-left text-sm">
               <thead className="bg-cyan-50/70 text-xs uppercase text-muted">
                 <tr>
-                  <th className="px-5 py-3 font-semibold">Business</th>
-                  <th className="px-5 py-3 font-semibold">Pilot</th>
-                  <th className="px-5 py-3 font-semibold">Subscription</th>
-                  <th className="px-5 py-3 font-semibold">Days</th>
-                  <th className="px-5 py-3 font-semibold">Pilot ends</th>
-                  <th className="px-5 py-3 font-semibold">Total leads</th>
-                  <th className="px-5 py-3 font-semibold">Last 30 days</th>
-                  <th className="px-5 py-3 font-semibold">Last lead</th>
-                  <th className="px-5 py-3 font-semibold">Inbound alias</th>
-                  <th className="px-5 py-3 font-semibold">SMS</th>
-                  <th className="px-5 py-3 font-semibold">Email</th>
+                  <th className="w-72 px-5 py-3 font-semibold">Business</th>
+                  <th className="w-32 px-5 py-3 font-semibold">Pilot</th>
+                  <th className="w-32 px-5 py-3 font-semibold">Subscription</th>
+                  <th className="w-24 px-5 py-3 font-semibold">Days</th>
+                  <th className="w-28 px-5 py-3 font-semibold">Pilot ends</th>
+                  <th className="w-24 px-5 py-3 font-semibold">Total leads</th>
+                  <th className="w-28 px-5 py-3 font-semibold">Last 30 days</th>
+                  <th className="w-28 px-5 py-3 font-semibold">Last lead</th>
+                  <th className="w-40 px-5 py-3 font-semibold">Inbound alias</th>
+                  <th className="w-20 px-5 py-3 font-semibold">SMS</th>
+                  <th className="w-20 px-5 py-3 font-semibold">Email</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border bg-white">
@@ -157,9 +157,9 @@ export default async function AdminBusinessesPage() {
 
                   return (
                     <tr className="align-middle transition hover:bg-cyan-50/50" key={business.id}>
-                      <td className="px-5 py-4">
-                        <p className="font-medium text-foreground">{business.name}</p>
-                        <p className="mt-1 text-xs text-muted">{business.id}</p>
+                      <td className="min-w-0 px-5 py-4">
+                        <p className="safe-line font-medium text-foreground">{business.name}</p>
+                        <p className="safe-line mt-1 text-xs text-muted">{business.id}</p>
                       </td>
                       <td className="px-5 py-4">{formatLabel(business.pilot_status)}</td>
                       <td className="px-5 py-4">
@@ -178,8 +178,10 @@ export default async function AdminBusinessesPage() {
                       <td className="px-5 py-4 text-muted">
                         {lastLead ? formatDate(lastLead) : "No leads"}
                       </td>
-                      <td className="px-5 py-4 text-muted">
+                      <td className="min-w-0 px-5 py-4 text-muted">
+                        <span className="safe-line block">
                         {business.inbound_email_alias ?? "Not set"}
+                        </span>
                       </td>
                       <td className="px-5 py-4">
                         {getRuleEnabled(

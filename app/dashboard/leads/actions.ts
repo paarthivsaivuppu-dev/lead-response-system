@@ -4,8 +4,10 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { isBusinessAccessible } from "@/lib/business/access";
 import { createLeadForBusiness } from "@/lib/leads/create-lead";
+import { normalizeAustralianPhoneNumber } from "@/lib/phone/normalize";
 import { createClient } from "@/lib/supabase/server";
 import { getBusinessSettings, getCurrentBusiness } from "@/lib/data";
+import { isValidOptionalEmail } from "@/lib/forms/validation";
 import { leadStatuses, type LeadStatus } from "@/lib/types";
 
 const sourceOptions = ["manual", "email", "sms", "website"] as const;
@@ -160,6 +162,14 @@ export async function createLead(formData: FormData) {
 
   if (!sourceOptions.includes(source as (typeof sourceOptions)[number])) {
     throw new Error("Invalid lead source.");
+  }
+
+  if (customerPhone && !normalizeAustralianPhoneNumber(customerPhone).ok) {
+    redirect("/dashboard/leads/new?error=invalid_phone");
+  }
+
+  if (!isValidOptionalEmail(customerEmail)) {
+    redirect("/dashboard/leads/new?error=invalid_email");
   }
 
   const business = await getCurrentBusiness();

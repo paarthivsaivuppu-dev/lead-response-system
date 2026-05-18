@@ -1,7 +1,9 @@
 "use client";
 
+import { useState, useTransition } from "react";
 import { deleteLead } from "@/app/dashboard/leads/actions";
-import { SubmitButton } from "@/components/ui/submit-button";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { Button } from "@/components/ui/button";
 
 type DeleteLeadButtonProps = {
   leadId: string;
@@ -9,28 +11,33 @@ type DeleteLeadButtonProps = {
 };
 
 export function DeleteLeadButton({ leadId, leadName }: DeleteLeadButtonProps) {
-  return (
-    <form
-      action={async () => {
-        await deleteLead(leadId);
-      }}
-      onSubmit={(event) => {
-        const confirmed = window.confirm(
-          `Delete ${leadName}? This cannot be undone.`
-        );
+  const [isOpen, setIsOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
-        if (!confirmed) {
-          event.preventDefault();
-        }
-      }}
-    >
-      <SubmitButton
+  return (
+    <>
+      <Button
         className="border-rose-200 text-rose-700 hover:bg-rose-50"
-        pendingText="Deleting..."
+        onClick={() => setIsOpen(true)}
+        type="button"
         variant="outline"
       >
         Delete Lead
-      </SubmitButton>
-    </form>
+      </Button>
+      <ConfirmationDialog
+        body={`This will permanently remove ${leadName} from the dashboard. This cannot be undone.`}
+        confirmLabel="Delete lead"
+        isOpen={isOpen}
+        isPending={isPending}
+        onCancel={() => setIsOpen(false)}
+        onConfirm={() => {
+          startTransition(() => {
+            void deleteLead(leadId);
+          });
+        }}
+        pendingLabel="Deleting..."
+        title="Delete lead?"
+      />
+    </>
   );
 }
